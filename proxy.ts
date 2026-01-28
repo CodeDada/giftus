@@ -20,8 +20,9 @@ export function middleware(request: NextRequest) {
     }
   }
 
-  // Block direct access to /admin routes on main domain
-  if (!hostname.startsWith("admin.") && url.pathname.startsWith("/admin")) {
+  // Block direct access to /admin routes on main domain (except in preview/development)
+  const isPreviewOrDev = hostname.includes("v0.dev") || hostname.includes("vercel.app") || hostname.includes("localhost")
+  if (!hostname.startsWith("admin.") && url.pathname.startsWith("/admin") && !isPreviewOrDev) {
     url.pathname = "/"
     return NextResponse.redirect(url)
   }
