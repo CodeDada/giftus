@@ -63,24 +63,24 @@ export function Hero() {
                 <div className="absolute inset-0 bg-foreground/50" />
                 
                 {/* Content overlay */}
-                <div className="absolute inset-0 flex items-center justify-center">
-                  <div className="mx-auto max-w-4xl px-6 text-center">
-                    <p className="text-sm font-medium tracking-wider text-background/80 uppercase mb-4">
+                <div className="absolute inset-0 flex items-center justify-center px-4 py-12 sm:py-8">
+                  <div className="mx-auto max-w-4xl px-4 sm:px-6 text-center">
+                    <p className="text-xs sm:text-sm font-medium tracking-wider text-background/80 uppercase mb-3 sm:mb-4">
                       India&apos;s Trusted Awards Partner
                     </p>
-                    <h1 className="text-4xl font-semibold tracking-tight text-background sm:text-5xl lg:text-6xl xl:text-7xl text-balance leading-tight">
+                    <h1 className="text-2xl sm:text-4xl md:text-5xl lg:text-6xl xl:text-7xl font-semibold tracking-tight text-background text-balance leading-tight">
                       Custom Trophies & Awards for Every Achievement
                     </h1>
-                    <p className="mt-6 text-lg leading-relaxed text-background/90 max-w-2xl mx-auto">
+                    <p className="mt-4 sm:mt-6 text-sm sm:text-lg leading-relaxed text-background/90 max-w-2xl mx-auto">
                       From corporate recognitions to school ceremonies, we craft premium quality 
                       trophies and awards that celebrate excellence.
                     </p>
-                    <div className="mt-8 flex flex-col sm:flex-row gap-4 justify-center">
-                      <Button size="lg" className="gap-2 bg-background text-foreground hover:bg-background/90">
+                    <div className="mt-6 sm:mt-8 flex flex-col sm:flex-row gap-3 sm:gap-4 justify-center">
+                      <Button size="lg" className="gap-2 bg-background text-foreground hover:bg-background/90 text-sm sm:text-base">
                         Explore Products
                         <ArrowRight className="h-4 w-4" />
                       </Button>
-                      <Button variant="outline" size="lg" className="border-background text-background hover:bg-background/10 bg-transparent">
+                      <Button variant="outline" size="lg" className="border-background text-background hover:bg-background/10 bg-transparent text-sm sm:text-base">
                         Request Bulk Quote
                       </Button>
                     </div>
