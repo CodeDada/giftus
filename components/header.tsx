@@ -10,6 +10,7 @@ const navigation = [
   { name: "About", href: "#about" },
   { name: "Why Us", href: "#why-us" },
   { name: "Contact", href: "#contact" },
+  { name: "Admin", href: "/admin/bulk-upload" },
 ]
 
 export function Header() {
