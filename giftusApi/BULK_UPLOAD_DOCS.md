@@ -2,7 +2,10 @@
 
 ## Overview
 
-The bulk upload feature allows you to import multiple products, their variants, and images into the Giftus system using an Excel file. This significantly speeds up product catalog management.
+The bulk upload feature provides **two different formats** for importing products:
+
+1. **Standard Format** - One product per row (Traditional)
+2. **Matrix Format** - Two products per row (Space-efficient)
 
 ## Features
 
@@ -16,7 +19,9 @@ The bulk upload feature allows you to import multiple products, their variants, 
 
 ## API Endpoints
 
-### 1. Upload Bulk Data
+### Standard Format
+
+#### 1. Upload Bulk Data (Standard)
 **POST** `/api/bulkupload/upload`
 
 **Request:**
@@ -37,14 +42,46 @@ The bulk upload feature allows you to import multiple products, their variants, 
 }
 ```
 
-### 2. Download Template
+#### 2. Download Template (Standard)
 **GET** `/api/bulkupload/template`
 
 **Response:** CSV file with template structure
 
 ---
 
-## Excel Template Format
+### Matrix Format
+
+#### 1. Upload Bulk Data (Matrix)
+**POST** `/api/bulkupload/upload-matrix`
+
+**Request:**
+- Content-Type: `multipart/form-data`
+- Body: Excel file (.xlsx or .xls) with matrix layout
+- Max File Size: 10 MB
+
+**Response:**
+```json
+{
+  "message": "Bulk matrix upload completed",
+  "summary": {
+    "totalRows": 4,
+    "successfulRows": 4,
+    "failedRows": 0,
+    "errors": []
+  }
+}
+```
+
+#### 2. Download Template (Matrix)
+**GET** `/api/bulkupload/template-matrix`
+
+**Response:** Template Excel format
+
+---
+
+## Excel Formats
+
+### Option 1: Standard Format (One Product Per Row)
 
 ### Required Columns
 
@@ -111,6 +148,43 @@ Trophy,TPHY001,Gold Trophy,gold-trophy,Premium gold trophy for winners,https://e
 Crystal,CRYS001,Crystal Award,crystal-award,Elegant crystal award,https://example.com/crystal.jpg,,18,Yes,"[{""name"":""Engraving"",""value"":""Yes"",""price"":100}]"
 Sports,SPRT001,Sports Medal,sports-medal,Sports achievement medal,,https://example.com/medal.mp4,5,No,
 ```
+
+### Option 2: Matrix Format (Two Products Per Row)
+
+**Structure:**
+- Row 1: Headers
+- Rows 2-4: Product 1 (data, image URLs, data continued)
+- Row 5: Empty separator
+- Rows 6-8: Product 2
+- Row 9: Empty separator
+- And so on...
+
+**Column Layout Per Product:**
+- Col B: Image (row 1)
+- Col C: ModelNo (row 1)
+- Col D: Size (row 1)
+- Col E: Qty (row 1)
+- Col F: Price (row 1, e.g., "Rs. 1,500")
+- Col G: Links (row 1)
+- Col H: HSN/GST (row 1, e.g., "HSN 3926 GST 18%")
+- Col B (rows 2-3): Image URLs
+
+**Example:**
+```
+Row 1: Headers (IMAGE, MODEL NO., SIZE, Qty., PRICE, Links, HSN/GST for each product)
+Row 2: NWD-1 | 10" | 29 | Rs. 1,500 | ... | HSN 3926 GST 18% | NWD-2 | 11" | 29 | Rs. 1,420 | ... | HSN 3926 GST 18%
+Row 3: Image URL for NWD-1 in B3 | ... | Image URL for NWD-2 in J3
+Row 4: More images/links | ... | More images/links
+Row 5: (empty separator)
+Row 6: Next product set...
+```
+
+**Features:**
+- Automatic price parsing (removes "Rs." and commas)
+- Automatic GST extraction from "HSN X GST Y%" format
+- Category auto-generated from ModelNo (e.g., NWD-1 → NWD category)
+- Creates variants with Size information
+- Downloads images from URLs provided in image rows
 
 ---
 
