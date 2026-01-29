@@ -1,0 +1,6 @@
+@giftusApi_HostAddress = http://localhost:5056
+
+GET {{giftusApi_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###

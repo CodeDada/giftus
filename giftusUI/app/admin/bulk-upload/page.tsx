@@ -1,6 +1,9 @@
 "use client"
 
 import React from "react"
+import { Header } from "@/components/header"
+import { Footer } from "@/components/footer"
+import { getHelloWorld } from "@/lib/apiHandler"
 
 import { useState } from "react"
 import { Upload, Download, FileSpreadsheet, AlertCircle } from "lucide-react"
@@ -46,7 +49,9 @@ export default function BulkUploadPage() {
   const [updateStock, setUpdateStock] = useState(false)
   const [summary, setSummary] = useState<UploadSummary | null>(null)
   const [errors, setErrors] = useState<UploadError[]>([])
-
+  const [apiResponse, setApiResponse] = useState<any>(null)
+  const [apiLoading, setApiLoading] = useState(false)
+  const [apiError, setApiError] = useState<string | null>(null)
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const selectedFile = e.target.files?.[0]
     if (selectedFile) {
@@ -88,9 +93,28 @@ export default function BulkUploadPage() {
     console.log("Downloading Excel template...")
   }
 
+  const handleCallHelloWorldAPI = async () => {
+    setApiLoading(true)
+    setApiError(null)
+    setApiResponse(null)
+
+    try {
+      const data = await getHelloWorld()
+      setApiResponse(data)
+    } catch (error: any) {
+      const errorMessage = error?.message || JSON.stringify(error) || "Failed to call API"
+      console.error("API Error:", errorMessage)
+      setApiError(errorMessage)
+    } finally {
+      setApiLoading(false)
+    }
+  }
+
   return (
-    <div className="min-h-screen bg-background">
-      <div className="mx-auto max-w-3xl px-6 py-12">
+    <div className="min-h-screen bg-background flex flex-col">
+      <Header />
+      <main className="flex-grow">
+        <div className="mx-auto max-w-3xl px-6 py-12">
         {/* Page Header */}
         <div className="mb-8">
           <h1 className="text-2xl font-semibold text-foreground">Product Bulk Upload</h1>
@@ -193,6 +217,14 @@ export default function BulkUploadPage() {
                 <Download className="h-4 w-4" />
                 Download Excel Template
               </Button>
+              <Button 
+                variant="secondary" 
+                onClick={handleCallHelloWorldAPI} 
+                disabled={apiLoading}
+                className="gap-2"
+              >
+                {apiLoading ? "Calling API..." : "Test Hello World API"}
+              </Button>
             </div>
           </CardContent>
         </Card>
@@ -230,6 +262,39 @@ export default function BulkUploadPage() {
           </Card>
         )}
 
+        {/* API Response */}
+        {apiError && (
+          <Card className="mb-8 border-destructive bg-destructive/10">
+            <CardHeader>
+              <CardTitle className="text-lg text-destructive">API Error</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <p className="text-destructive">{apiError}</p>
+            </CardContent>
+          </Card>
+        )}
+
+        {apiResponse && (
+          <Card className="mb-8 border-green-600 bg-green-50">
+            <CardHeader>
+              <CardTitle className="text-lg text-green-700">API Response</CardTitle>
+              <CardDescription>Response from Hello World API</CardDescription>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-3">
+                <div className="bg-white rounded-lg p-4 font-mono text-sm border border-green-200">
+                  <pre className="whitespace-pre-wrap break-words">
+                    {JSON.stringify(apiResponse, null, 2)}
+                  </pre>
+                </div>
+                <p className="text-sm text-muted-foreground">
+                  ✓ Successfully called API at http://localhost:5000/api/helloworld
+                </p>
+              </div>
+            </CardContent>
+          </Card>
+        )}
+
         {/* Error List */}
         {errors.length > 0 && (
           <Card>
@@ -260,6 +325,8 @@ export default function BulkUploadPage() {
           </Card>
         )}
       </div>
-    </div>
+    </main>
+    <Footer />
+  </div>
   )
 }
