@@ -31,3 +31,24 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# .NET Core / ASP.NET Core
+bin/
+obj/
+*.dll
+*.exe
+*.pdb
+*.so
+*.dylib
+*.su
+*.o
+.vs/
+.vscode/settings.json
+launchSettings.json
+*.user
+*.userosscache
+*.sln.docstates
+.idea/
+*.swp
+*.swo
+*~
