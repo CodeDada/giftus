@@ -198,8 +198,8 @@ public class ProductsController : ControllerBase
 
             // Check unique constraint
             var existingVariant = await _dbContext.ProductVariants
-                .FirstOrDefaultAsync(v => v.ProductId == id 
-                    && v.VariantName == dto.VariantName 
+                .FirstOrDefaultAsync(v => v.ProductId == id
+                    && v.VariantName == dto.VariantName
                     && v.VariantValue == dto.VariantValue);
 
             if (existingVariant != null)

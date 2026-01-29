@@ -47,12 +47,12 @@ public class GiftusDbContext : DbContext
             entity.Property(e => e.ShortDescription).HasMaxLength(500);
             entity.Property(e => e.GstPercent).HasColumnType("decimal(5,2)").HasDefaultValue(18.00m);
             entity.Property(e => e.CreatedAt).HasDefaultValueSql("SYSDATETIME()");
-            
+
             entity.HasOne(e => e.Category)
                 .WithMany(c => c.Products)
                 .HasForeignKey(e => e.CategoryId)
                 .OnDelete(DeleteBehavior.Restrict);
-            
+
             entity.HasIndex(e => e.CategoryId);
         });
 
@@ -62,12 +62,12 @@ public class GiftusDbContext : DbContext
             entity.HasKey(e => e.Id);
             entity.Property(e => e.ImageUrl).IsRequired().HasMaxLength(500);
             entity.Property(e => e.CreatedAt).HasDefaultValueSql("SYSDATETIME()");
-            
+
             entity.HasOne(e => e.Product)
                 .WithMany(p => p.ProductImages)
                 .HasForeignKey(e => e.ProductId)
                 .OnDelete(DeleteBehavior.Cascade);
-            
+
             entity.HasIndex(e => e.ProductId);
         });
 
@@ -78,12 +78,12 @@ public class GiftusDbContext : DbContext
             entity.Property(e => e.VariantName).IsRequired().HasMaxLength(50).HasDefaultValue("Size");
             entity.Property(e => e.VariantValue).IsRequired().HasMaxLength(50);
             entity.Property(e => e.Price).HasColumnType("decimal(10,2)");
-            
+
             entity.HasOne(e => e.Product)
                 .WithMany(p => p.ProductVariants)
                 .HasForeignKey(e => e.ProductId)
                 .OnDelete(DeleteBehavior.Cascade);
-            
+
             entity.HasIndex(e => e.ProductId);
             entity.HasIndex(new[] { "ProductId", "VariantName", "VariantValue" })
                 .IsUnique()
@@ -104,7 +104,7 @@ public class GiftusDbContext : DbContext
             entity.Property(e => e.TotalAmount).HasColumnType("decimal(10,2)");
             entity.Property(e => e.OrderStatus).IsRequired().HasMaxLength(50).HasDefaultValue("PENDING");
             entity.Property(e => e.CreatedAt).HasDefaultValueSql("SYSDATETIME()");
-            
+
             entity.HasIndex(e => e.OrderStatus);
             entity.HasIndex(e => e.CreatedAt);
         });
@@ -114,17 +114,17 @@ public class GiftusDbContext : DbContext
         {
             entity.HasKey(e => e.Id);
             entity.Property(e => e.Price).HasColumnType("decimal(10,2)");
-            
+
             entity.HasOne(e => e.Order)
                 .WithMany(o => o.OrderItems)
                 .HasForeignKey(e => e.OrderId)
                 .OnDelete(DeleteBehavior.Cascade);
-            
+
             entity.HasOne(e => e.Product)
                 .WithMany(p => p.OrderItems)
                 .HasForeignKey(e => e.ProductId)
                 .OnDelete(DeleteBehavior.Restrict);
-            
+
             entity.HasOne(e => e.ProductVariant)
                 .WithMany(pv => pv.OrderItems)
                 .HasForeignKey(e => e.VariantId)
@@ -136,7 +136,7 @@ public class GiftusDbContext : DbContext
         {
             entity.HasKey(e => e.Id);
             entity.Property(e => e.CustomizationKey).IsRequired().HasMaxLength(100);
-            
+
             entity.HasOne(e => e.OrderItem)
                 .WithMany(oi => oi.OrderCustomizations)
                 .HasForeignKey(e => e.OrderItemId)
@@ -152,7 +152,7 @@ public class GiftusDbContext : DbContext
             entity.Property(e => e.PaymentStatus).HasMaxLength(50);
             entity.Property(e => e.Amount).HasColumnType("decimal(10,2)");
             entity.Property(e => e.CreatedAt).HasDefaultValueSql("SYSDATETIME()");
-            
+
             entity.HasOne(e => e.Order)
                 .WithMany(o => o.Payments)
                 .HasForeignKey(e => e.OrderId)

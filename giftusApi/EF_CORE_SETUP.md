@@ -7,43 +7,51 @@ This project uses **Entity Framework Core 10.0** with **SQL Server** to manage t
 ## Entity Models
 
 ### 1. **Category**
+
 - Represents product categories (e.g., Trophies, Awards, Gifts)
 - Has many Products
 - Fields: Id, Name, Slug, Description, IsActive, CreatedAt
 
 ### 2. **Product**
+
 - Represents individual products with a specific ModelNo
 - Belongs to one Category
 - Has many ProductImages, ProductVariants, and OrderItems
 - Fields: Id, CategoryId, ModelNo, Name, Slug, BaseImageUrl, VideoUrl, ShortDescription, GstPercent, IsCustomizable, IsActive, CreatedAt
 
 ### 3. **ProductImage**
+
 - Stores multiple images for each product
 - Belongs to one Product
 - Fields: Id, ProductId, ImageUrl, SortOrder, CreatedAt
 
 ### 4. **ProductVariant**
+
 - Represents product variants (sizes, colors, etc.) with different prices and stock
 - Belongs to one Product
 - Has many OrderItems
 - Fields: Id, ProductId, VariantName, VariantValue, Price, StockQty
 
 ### 5. **Order**
+
 - Represents customer orders (no authentication required)
 - Has many OrderItems and Payments
 - Fields: Id, OrderNumber, CustomerName, CustomerEmail, CustomerPhone, DeliveryAddress, Subtotal, GstAmount, TotalAmount, OrderStatus, CreatedAt
 
 ### 6. **OrderItem**
+
 - Represents individual items in an order
 - Links Order, Product, ProductVariant, and OrderCustomizations
 - Fields: Id, OrderId, ProductId, VariantId, Quantity, Price
 
 ### 7. **OrderCustomization**
+
 - Stores customization details for order items (engraving text, logo URL, etc.)
 - Belongs to one OrderItem
 - Fields: Id, OrderItemId, CustomizationKey, CustomizationValue
 
 ### 8. **Payment**
+
 - Tracks payment information for orders
 - Belongs to one Order
 - Fields: Id, OrderId, PaymentGateway, PaymentId, PaymentStatus, Amount, CreatedAt
@@ -51,11 +59,13 @@ This project uses **Entity Framework Core 10.0** with **SQL Server** to manage t
 ## Database Connection
 
 ### Connection String
+
 ```
 Server=(local);Database=giftus;Trusted_Connection=true;TrustServerCertificate=true;
 ```
 
 Configure in `appsettings.json`:
+
 ```json
 {
   "ConnectionStrings": {
@@ -65,7 +75,9 @@ Configure in `appsettings.json`:
 ```
 
 ### DbContext Registration
+
 In `Program.cs`:
+
 ```csharp
 var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
 builder.Services.AddDbContext<GiftusDbContext>(options =>
@@ -78,18 +90,23 @@ builder.Services.AddDbContext<GiftusDbContext>(options =>
 ### Categories API (`/api/categories`)
 
 #### GET all categories
+
 ```
 GET /api/categories
 ```
+
 Returns all active categories.
 
 #### GET category by ID
+
 ```
 GET /api/categories/{id}
 ```
+
 Returns category with its products.
 
 #### POST create category
+
 ```
 POST /api/categories
 Content-Type: application/json
@@ -102,6 +119,7 @@ Content-Type: application/json
 ```
 
 #### PUT update category
+
 ```
 PUT /api/categories/{id}
 Content-Type: application/json
@@ -114,6 +132,7 @@ Content-Type: application/json
 ```
 
 #### DELETE category
+
 ```
 DELETE /api/categories/{id}
 ```
@@ -121,6 +140,7 @@ DELETE /api/categories/{id}
 ## Common Queries
 
 ### Get products with variants and images
+
 ```csharp
 var products = await _dbContext.Products
     .Include(p => p.Category)
@@ -132,6 +152,7 @@ var products = await _dbContext.Products
 ```
 
 ### Get orders with items and customizations
+
 ```csharp
 var orders = await _dbContext.Orders
     .Include(o => o.OrderItems)
@@ -144,6 +165,7 @@ var orders = await _dbContext.Orders
 ```
 
 ### Update product stock
+
 ```csharp
 var variant = await _dbContext.ProductVariants.FindAsync(variantId);
 if (variant != null)
@@ -167,6 +189,7 @@ if (variant != null)
 ## Error Handling
 
 All controllers include try-catch blocks and return appropriate HTTP status codes:
+
 - **200 OK**: Successful GET/PUT/DELETE
 - **201 Created**: Successful POST
 - **400 Bad Request**: Invalid input data

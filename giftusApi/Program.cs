@@ -8,7 +8,7 @@ builder.Services.AddControllers();
 builder.Services.AddOpenApi();
 
 // Configure Entity Framework Core with SQL Server
-var connectionString = builder.Configuration.GetConnectionString("DefaultConnection") 
+var connectionString = builder.Configuration.GetConnectionString("DefaultConnection")
     ?? "Server=(local);Database=giftus;Trusted_Connection=true;TrustServerCertificate=true;";
 
 builder.Services.AddDbContext<GiftusDbContext>(options =>

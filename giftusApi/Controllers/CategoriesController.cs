@@ -30,7 +30,7 @@ public class CategoriesController : ControllerBase
                 .Where(c => c.IsActive)
                 .OrderBy(c => c.Name)
                 .ToListAsync();
-            
+
             return Ok(categories);
         }
         catch (Exception ex)
