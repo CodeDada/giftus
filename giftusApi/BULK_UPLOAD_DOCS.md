@@ -22,14 +22,17 @@ The bulk upload feature provides **two different formats** for importing product
 ### Standard Format
 
 #### 1. Upload Bulk Data (Standard)
+
 **POST** `/api/bulkupload/upload`
 
 **Request:**
+
 - Content-Type: `multipart/form-data`
 - Body: Excel file (.xlsx or .xls)
 - Max File Size: 10 MB
 
 **Response:**
+
 ```json
 {
   "message": "Bulk upload completed",
@@ -43,6 +46,7 @@ The bulk upload feature provides **two different formats** for importing product
 ```
 
 #### 2. Download Template (Standard)
+
 **GET** `/api/bulkupload/template`
 
 **Response:** CSV file with template structure
@@ -52,14 +56,17 @@ The bulk upload feature provides **two different formats** for importing product
 ### Matrix Format
 
 #### 1. Upload Bulk Data (Matrix)
+
 **POST** `/api/bulkupload/upload-matrix`
 
 **Request:**
+
 - Content-Type: `multipart/form-data`
 - Body: Excel file (.xlsx or .xls) with matrix layout
 - Max File Size: 10 MB
 
 **Response:**
+
 ```json
 {
   "message": "Bulk matrix upload completed",
@@ -73,6 +80,7 @@ The bulk upload feature provides **two different formats** for importing product
 ```
 
 #### 2. Download Template (Matrix)
+
 **GET** `/api/bulkupload/template-matrix`
 
 **Response:** Template Excel format
@@ -85,18 +93,18 @@ The bulk upload feature provides **two different formats** for importing product
 
 ### Required Columns
 
-| Column | Type | Required | Description | Example |
-|--------|------|----------|-------------|---------|
-| Category | String | ✅ | Product category name | Trophy, Crystal |
-| ModelNo | String | ✅ | Unique model number | TPHY001, CRYS001 |
-| ProductName | String | ✅ | Product display name | Gold Trophy, Crystal Award |
-| Slug | String | ❌ | URL-friendly slug (auto-generated if empty) | gold-trophy |
-| Description | String | ❌ | Product description | Premium gold trophy |
-| ImageUrl | String | ❌ | Image URL to download | https://example.com/image.jpg |
-| VideoUrl | String | ❌ | Video URL | https://example.com/video.mp4 |
-| GstPercent | Number | ❌ | GST percentage (default: 18) | 18, 5, 12 |
-| IsCustomizable | String | ❌ | "Yes" or "true" for customizable | Yes, No, true, false |
-| Variants | JSON | ❌ | Product variants in JSON array | See below |
+| Column         | Type   | Required | Description                                 | Example                       |
+| -------------- | ------ | -------- | ------------------------------------------- | ----------------------------- |
+| Category       | String | ✅       | Product category name                       | Trophy, Crystal               |
+| ModelNo        | String | ✅       | Unique model number                         | TPHY001, CRYS001              |
+| ProductName    | String | ✅       | Product display name                        | Gold Trophy, Crystal Award    |
+| Slug           | String | ❌       | URL-friendly slug (auto-generated if empty) | gold-trophy                   |
+| Description    | String | ❌       | Product description                         | Premium gold trophy           |
+| ImageUrl       | String | ❌       | Image URL to download                       | https://example.com/image.jpg |
+| VideoUrl       | String | ❌       | Video URL                                   | https://example.com/video.mp4 |
+| GstPercent     | Number | ❌       | GST percentage (default: 18)                | 18, 5, 12                     |
+| IsCustomizable | String | ❌       | "Yes" or "true" for customizable            | Yes, No, true, false          |
+| Variants       | JSON   | ❌       | Product variants in JSON array              | See below                     |
 
 ### Variants JSON Format
 
@@ -126,6 +134,7 @@ Variants should be provided as a JSON string in the `Variants` column:
 ```
 
 Or as a single-line JSON string in Excel (escape quotes):
+
 ```
 [{"name":"Size","value":"Small","price":500,"stockQty":10},{"name":"Size","value":"Medium","price":600,"stockQty":15}]
 ```
@@ -135,6 +144,7 @@ Or as a single-line JSON string in Excel (escape quotes):
 ## Example Data
 
 ### Minimal Example
+
 ```
 Category,ModelNo,ProductName
 Trophy,TPHY001,Gold Trophy
@@ -142,6 +152,7 @@ Crystal,CRYS001,Crystal Award
 ```
 
 ### Complete Example
+
 ```
 Category,ModelNo,ProductName,Slug,Description,ImageUrl,VideoUrl,GstPercent,IsCustomizable,Variants
 Trophy,TPHY001,Gold Trophy,gold-trophy,Premium gold trophy for winners,https://example.com/gold-trophy.jpg,https://example.com/gold-trophy.mp4,18,No,"[{""name"":""Size"",""value"":""Small"",""price"":500},{""name"":""Size"",""value"":""Large"",""price"":700}]"
@@ -152,6 +163,7 @@ Sports,SPRT001,Sports Medal,sports-medal,Sports achievement medal,,https://examp
 ### Option 2: Matrix Format (Two Products Per Row)
 
 **Structure:**
+
 - Row 1: Headers
 - Rows 2-4: Product 1 (data, image URLs, data continued)
 - Row 5: Empty separator
@@ -160,6 +172,7 @@ Sports,SPRT001,Sports Medal,sports-medal,Sports achievement medal,,https://examp
 - And so on...
 
 **Column Layout Per Product:**
+
 - Col B: Image (row 1)
 - Col C: ModelNo (row 1)
 - Col D: Size (row 1)
@@ -170,6 +183,7 @@ Sports,SPRT001,Sports Medal,sports-medal,Sports achievement medal,,https://examp
 - Col B (rows 2-3): Image URLs
 
 **Example:**
+
 ```
 Row 1: Headers (IMAGE, MODEL NO., SIZE, Qty., PRICE, Links, HSN/GST for each product)
 Row 2: NWD-1 | 10" | 29 | Rs. 1,500 | ... | HSN 3926 GST 18% | NWD-2 | 11" | 29 | Rs. 1,420 | ... | HSN 3926 GST 18%
@@ -180,6 +194,7 @@ Row 6: Next product set...
 ```
 
 **Features:**
+
 - Automatic price parsing (removes "Rs." and commas)
 - Automatic GST extraction from "HSN X GST Y%" format
 - Category auto-generated from ModelNo (e.g., NWD-1 → NWD category)
@@ -191,17 +206,20 @@ Row 6: Next product set...
 ## Image Handling
 
 ### Image Storage
+
 - Images are downloaded from provided URLs
 - Stored in: `resources/images/`
 - File naming: `{ModelNo}_base.{extension}`
 - Supported formats: JPEG, PNG, WebP, GIF
 
 ### Image Updates
+
 - Existing images are overwritten if a new URL is provided
 - If no URL is provided, existing image is kept
 - Failed image downloads don't stop product creation
 
 ### Image Path in Database
+
 - Images are stored as relative URLs
 - Example: `/resources/images/TPHY001_base.jpg`
 - Use this path in frontend for display
@@ -212,18 +230,19 @@ Row 6: Next product set...
 
 ### Common Errors
 
-| Error | Cause | Solution |
-|-------|-------|----------|
-| "No file provided" | File upload failed | Try uploading again |
-| "File size exceeds 10 MB limit" | File too large | Reduce number of rows or images |
-| "Only Excel files (.xlsx, .xls) are supported" | Wrong file type | Use Excel format |
-| "Category is required" | Missing Category column | Add Category column |
-| "ModelNo is required" | Missing ModelNo column | Add ModelNo and ensure unique values |
-| "Product variant X already exists" | Duplicate variant | Remove duplicate variant rows |
+| Error                                          | Cause                   | Solution                             |
+| ---------------------------------------------- | ----------------------- | ------------------------------------ |
+| "No file provided"                             | File upload failed      | Try uploading again                  |
+| "File size exceeds 10 MB limit"                | File too large          | Reduce number of rows or images      |
+| "Only Excel files (.xlsx, .xls) are supported" | Wrong file type         | Use Excel format                     |
+| "Category is required"                         | Missing Category column | Add Category column                  |
+| "ModelNo is required"                          | Missing ModelNo column  | Add ModelNo and ensure unique values |
+| "Product variant X already exists"             | Duplicate variant       | Remove duplicate variant rows        |
 
 ### Success Summary
 
 After upload, you'll see:
+
 - **Total Rows**: Number of data rows processed
 - **Successful Rows**: Products created/updated successfully
 - **Failed Rows**: Products that failed to import
@@ -234,6 +253,7 @@ After upload, you'll see:
 ## Frontend UI
 
 ### Access
+
 - URL: `/admin/bulk-upload-new`
 - Features:
   - Download template button
@@ -244,6 +264,7 @@ After upload, you'll see:
   - Error list display
 
 ### Workflow
+
 1. Click "Download Excel Template"
 2. Fill in your product data
 3. Drag & drop file or click to select
@@ -255,15 +276,18 @@ After upload, you'll see:
 ## Database Schema Changes
 
 ### Products Table
+
 - New products are created with `IsActive = true`
 - New categories are automatically created if they don't exist
 - Existing products with the same ModelNo are updated
 
 ### ProductVariants Table
+
 - Variants are added only if they don't already exist
 - Composite unique key: (ProductId, VariantName, VariantValue)
 
 ### ProductImages Table
+
 - Images are stored as separate records
 - BaseImageUrl is updated in Products table
 
@@ -272,6 +296,7 @@ After upload, you'll see:
 ## Best Practices
 
 ### Data Preparation
+
 1. ✅ Keep ModelNo values unique
 2. ✅ Use consistent category names
 3. ✅ Verify image URLs are accessible
@@ -279,12 +304,14 @@ After upload, you'll see:
 5. ✅ Test with small batch first
 
 ### Image URLs
+
 1. ✅ Use HTTPS URLs
 2. ✅ Ensure images are publicly accessible
 3. ✅ Keep image sizes reasonable (< 5MB each)
 4. ✅ Test URLs before bulk upload
 
 ### Error Recovery
+
 1. ✅ Download and review error list
 2. ✅ Fix issues in your Excel file
 3. ✅ Retry upload
@@ -317,8 +344,8 @@ After upload, you'll see:
 ## Support
 
 For issues or questions:
+
 1. Check error messages in upload summary
 2. Verify Excel file format
 3. Ensure image URLs are accessible
 4. Check API logs for detailed errors
-

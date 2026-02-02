@@ -107,6 +107,33 @@ public class ProductsController : ControllerBase
     }
 
     /// <summary>
+    /// Get products by category name
+    /// </summary>
+    [HttpGet("category-by-name/{categoryName}")]
+    public async Task<ActionResult<IEnumerable<ProductDto>>> GetProductsByCategoryName(string categoryName)
+    {
+        try
+        {
+            var decodedName = System.Uri.UnescapeDataString(categoryName);
+            var products = await _dbContext.Products
+                .Include(p => p.Category)
+                .Include(p => p.ProductVariants)
+                .Include(p => p.ProductImages)
+                .Where(p => p.Category.Name == decodedName && p.IsActive)
+                .OrderBy(p => p.Name)
+                .Select(p => MapToDto(p))
+                .ToListAsync();
+
+            return Ok(products);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error fetching products for category name {categoryName}", categoryName);
+            return StatusCode(500, new { error = "Failed to fetch products", detail = ex.Message });
+        }
+    }
+
+    /// <summary>
     /// Create a new product
     /// </summary>
     [HttpPost]
@@ -282,7 +309,7 @@ public class ProductsController : ControllerBase
         }
     }
 
-    private ProductDto MapToDto(Product product)
+    private static ProductDto MapToDto(Product product)
     {
         return new ProductDto
         {
@@ -292,7 +319,11 @@ public class ProductsController : ControllerBase
             ModelNo = product.ModelNo,
             Name = product.Name,
             Slug = product.Slug,
-            BaseImageUrl = product.BaseImageUrl,
+            BaseImageUrl = string.IsNullOrEmpty(product.BaseImageUrl)
+                ? null
+                : product.BaseImageUrl.StartsWith("http")
+                    ? product.BaseImageUrl
+                    : $"http://localhost:5056{(product.BaseImageUrl.StartsWith("/") ? "" : "/")}{product.BaseImageUrl}",
             VideoUrl = product.VideoUrl,
             ShortDescription = product.ShortDescription,
             GstPercent = product.GstPercent,
@@ -311,7 +342,9 @@ public class ProductsController : ControllerBase
                 .Select(i => new ImageDto
                 {
                     Id = i.Id,
-                    ImageUrl = i.ImageUrl,
+                    ImageUrl = i.ImageUrl.StartsWith("http")
+                        ? i.ImageUrl
+                        : $"http://localhost:5056{(i.ImageUrl.StartsWith("/") ? "" : "/")}{i.ImageUrl}",
                     SortOrder = i.SortOrder
                 }).ToList()
         };

@@ -11,6 +11,7 @@ public class Product
     public string? VideoUrl { get; set; }
     public string? ShortDescription { get; set; }
     public decimal GstPercent { get; set; }
+    public int Quantity { get; set; } = 0; // Total stock quantity
     public bool IsCustomizable { get; set; }
     public bool IsActive { get; set; }
     public DateTime CreatedAt { get; set; }

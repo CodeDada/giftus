@@ -1,0 +1,59 @@
+{
+    // Use IntelliSense to learn about possible attributes.
+    // Hover to view descriptions of existing attributes.
+    // For more information, visit: https://go.microsoft.com/fwlink/?linkid=830387
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "name": ".NET Core Debug (giftusApi)",
+            "type": "coreclr",
+            "request": "launch",
+            "preLaunchTask": "build-giftusapi",
+            "program": "${workspaceFolder}/giftusApi/bin/Debug/net10.0/giftusApi.dll",
+            "args": [],
+            "cwd": "${workspaceFolder}/giftusApi",
+            "stopAtEntry": false,
+            "serverReadyAction": {
+                "pattern": "\\bNow listening on:\\s+(https?://\\S+)",
+                "uriFormat": "%s",
+                "action": "openExternally"
+            },
+            "env": {
+                "ASPNETCORE_ENVIRONMENT": "Development",
+                "ASPNETCORE_URLS": "http://localhost:5056"
+            }
+        },
+        {
+            "name": ".NET Core Attach (giftusApi)",
+            "type": "coreclr",
+            "request": "attach",
+            "processId": "${command:pickProcess}"
+        },
+        {
+            "name": ".NET Core Debug with Browser (giftusApi)",
+            "type": "coreclr",
+            "request": "launch",
+            "preLaunchTask": "build-giftusapi",
+            "program": "${workspaceFolder}/giftusApi/bin/Debug/net10.0/giftusApi.dll",
+            "args": [],
+            "cwd": "${workspaceFolder}/giftusApi",
+            "stopAtEntry": false,
+            "serverReadyAction": {
+                "pattern": "\\bNow listening on:\\s+(https?://\\S+)",
+                "uriFormat": "%s",
+                "action": "debugWithChrome"
+            },
+            "env": {
+                "ASPNETCORE_ENVIRONMENT": "Development",
+                "ASPNETCORE_URLS": "http://localhost:5056"
+            }
+        }
+    ],
+    "compounds": [
+        {
+            "name": "Debug Backend + Frontend",
+            "configurations": [".NET Core Debug (giftusApi)", ".NET Core Debug with Browser (giftusApi)"],
+            "stopAll": true
+        }
+    ]
+}

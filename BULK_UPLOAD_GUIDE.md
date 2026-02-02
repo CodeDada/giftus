@@ -7,16 +7,19 @@ Bulk upload functionality allows you to import hundreds of products with variant
 ## 📋 Quick Start
 
 ### Step 1: Prepare Your Excel File
+
 - Download template from `/admin/bulk-upload-new`
 - Fill in your product data
 - Ensure ImageUrl columns have valid URLs
 
 ### Step 2: Upload
+
 - Visit `/admin/bulk-upload-new`
 - Drag & drop your Excel file
 - Click "Upload Products"
 
 ### Step 3: Review Results
+
 - See success/failure counts
 - Fix any errors and retry
 
@@ -67,34 +70,40 @@ giftus/
 ## 🚀 Features Implemented
 
 ✅ **Excel Parsing**
+
 - EPPlus library for reliable Excel reading
 - Supports .xlsx and .xls formats
 - Handles empty cells and missing rows gracefully
 
 ✅ **Product Management**
+
 - Creates new products
 - Updates existing products (by ModelNo)
 - Auto-creates missing categories
 - Sets all products as active
 
 ✅ **Image Handling**
+
 - Downloads images from URLs
 - Stores in `resources/images/` folder
 - Automatic file naming: `{ModelNo}_base.{ext}`
 - Skips on error but doesn't fail product
 
 ✅ **Variant Support**
+
 - JSON format for variants
 - Each variant with name, value, price, stockQty
 - Supports multiple variants per product
 
 ✅ **Error Handling**
+
 - Detailed error messages per row
 - Success/failure counts
 - Error list in response
 - Graceful degradation
 
 ✅ **Frontend UI**
+
 - Drag-and-drop upload
 - Real-time progress
 - Success/failure summary with stats
@@ -104,6 +113,7 @@ giftus/
 ## 📊 Template Format
 
 ### Minimal (Required columns only)
+
 ```
 Category    | ModelNo  | ProductName
 Trophy      | TPHY001  | Gold Trophy
@@ -111,6 +121,7 @@ Crystal     | CRYS001  | Crystal Award
 ```
 
 ### Complete (All columns)
+
 ```
 Category | ModelNo  | ProductName  | Slug          | Description | ImageUrl | GstPercent | IsCustomizable | Variants
 Trophy   | TPHY001  | Gold Trophy  | gold-trophy   | Premium     | https... | 18         | No            | [{"name":"Size","value":"M","price":500}]
@@ -119,6 +130,7 @@ Trophy   | TPHY001  | Gold Trophy  | gold-trophy   | Premium     | https... | 18
 ## 🔧 API Endpoints
 
 ### Upload Endpoint
+
 ```
 POST /api/bulkupload/upload
 Content-Type: multipart/form-data
@@ -138,6 +150,7 @@ Response: {
 ```
 
 ### Template Endpoint
+
 ```
 GET /api/bulkupload/template
 
@@ -163,6 +176,7 @@ Response: CSV file with template structure
 ## 🖼️ Image Storage
 
 ### Location
+
 ```
 resources/images/
 ├── TPHY001_base.jpg
@@ -171,6 +185,7 @@ resources/images/
 ```
 
 ### URL in Database
+
 - Stored as: `/resources/images/{filename}`
 - Used in frontend for display
 - Can be served statically or via API
@@ -209,6 +224,7 @@ ModelNo TPHY001 already exists (updating)
 ## 🔄 Workflow Example
 
 1. **Prepare Data**
+
    ```
    Trophy | TPHY001 | Gold Trophy | https://example.com/gold.jpg | [{"name":"Size","value":"M","price":500}]
    ```
@@ -220,6 +236,7 @@ ModelNo TPHY001 already exists (updating)
    - Parse Excel → Validate data → Download image → Create category → Create product → Create variant
 
 4. **Results**
+
    ```
    Total: 1, Successful: 1, Failed: 0
    Image saved to: resources/images/TPHY001_base.jpg
@@ -256,4 +273,3 @@ ModelNo TPHY001 already exists (updating)
 **Status**: ✅ Implementation Complete
 **Tests**: Manual testing recommended
 **Date**: 29 January 2026
-

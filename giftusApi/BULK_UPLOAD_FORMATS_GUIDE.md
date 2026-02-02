@@ -2,25 +2,26 @@
 
 ## Quick Comparison
 
-| Feature | Standard Format | Matrix Format |
-|---------|-----------------|---------------|
-| **Endpoint** | `POST /api/bulkupload/upload` | `POST /api/bulkupload/upload-matrix` |
-| **Products Per Row** | 1 | 2 |
-| **Best For** | Traditional databases | Space-efficient catalogs |
-| **Rows Per Product** | 1 | 3 (+ 1 separator) |
-| **Column Structure** | Flat columns | Grouped columns |
-| **Category Field** | Required | Auto-generated |
-| **Price Format** | Flexible | "Rs. X,XXX" format |
-| **GST Field** | Direct number | "HSN X GST Y%" format |
-| **Image Rows** | Single URL per cell | Multiple rows per product |
-| **Variants** | JSON array | Single Size variant |
-| **Complexity** | Moderate | Simple |
+| Feature              | Standard Format               | Matrix Format                        |
+| -------------------- | ----------------------------- | ------------------------------------ |
+| **Endpoint**         | `POST /api/bulkupload/upload` | `POST /api/bulkupload/upload-matrix` |
+| **Products Per Row** | 1                             | 2                                    |
+| **Best For**         | Traditional databases         | Space-efficient catalogs             |
+| **Rows Per Product** | 1                             | 3 (+ 1 separator)                    |
+| **Column Structure** | Flat columns                  | Grouped columns                      |
+| **Category Field**   | Required                      | Auto-generated                       |
+| **Price Format**     | Flexible                      | "Rs. X,XXX" format                   |
+| **GST Field**        | Direct number                 | "HSN X GST Y%" format                |
+| **Image Rows**       | Single URL per cell           | Multiple rows per product            |
+| **Variants**         | JSON array                    | Single Size variant                  |
+| **Complexity**       | Moderate                      | Simple                               |
 
 ---
 
 ## Standard Format Details
 
 ### When to Use
+
 ✅ Complex product data with multiple fields
 ✅ Variable number of variants per product
 ✅ Different category for each product
@@ -28,6 +29,7 @@
 ✅ Need explicit product descriptions
 
 ### Template
+
 ```
 Category  | ModelNo  | ProductName | Slug | Description | ImageUrl | GstPercent | Variants
 ----------|----------|-------------|------|-------------|----------|-----------|----------
@@ -35,12 +37,14 @@ Trophy    | TPHY001  | Gold Trophy | slug | Desc        | url      | 18        |
 ```
 
 ### API Endpoint
+
 ```bash
 curl -X POST http://localhost:5000/api/bulkupload/upload \
   -F "file=@products.xlsx"
 ```
 
 ### Response
+
 ```json
 {
   "message": "Bulk upload completed",
@@ -58,6 +62,7 @@ curl -X POST http://localhost:5000/api/bulkupload/upload \
 ## Matrix Format Details
 
 ### When to Use
+
 ✅ Large product catalogs with 100+ items
 ✅ Multiple size variants per product
 ✅ Standard Indian pricing (Rs. format)
@@ -86,6 +91,7 @@ Row 6 (Next Product Set)
 ### Detailed Column Layout
 
 **First Product (Columns B-H):**
+
 - B: Image placeholder/URL
 - C: ModelNo (e.g., NWD-1)
 - D: Size (e.g., 10")
@@ -95,11 +101,13 @@ Row 6 (Next Product Set)
 - H: HSN/GST (e.g., HSN 3926 GST 18%)
 
 **Image Rows (Columns B-H, rows 3-4):**
+
 - B: Image URL 1
 - G: Links/References
 - Rows 3-4 contain actual URLs to download
 
 **Second Product (Columns J-P):**
+
 - J: Image placeholder/URL
 - K: ModelNo
 - L: Size
@@ -137,12 +145,14 @@ Row 6 (Next Product Set)
    - Example: NWD-1_base.jpg
 
 ### API Endpoint
+
 ```bash
 curl -X POST http://localhost:5000/api/bulkupload/upload-matrix \
   -F "file=@products_matrix.xlsx"
 ```
 
 ### Response
+
 ```json
 {
   "message": "Bulk matrix upload completed",
@@ -162,6 +172,7 @@ curl -X POST http://localhost:5000/api/bulkupload/upload-matrix \
 ### Same Products in Both Formats
 
 #### Standard Format (1 row per product)
+
 ```
 Category | ModelNo | ProductName    | Size | Price | HSN/GST
 ---------|---------|----------------|------|-------|----------
@@ -172,6 +183,7 @@ Trophy   | CRYS-1  | Crystal - Med  | M    | 3200  | HSN 7018 GST 18%
 ```
 
 #### Matrix Format (2 per row)
+
 ```
 Row 1: [Headers]
 Row 2: NWD-1, 10", 29, Rs.1500, HSN 3926 18% | NWD-2, 11", 29, Rs.1420, HSN 3926 18%
@@ -212,33 +224,35 @@ Row 8: [More refs] | [More refs]
 
 ### Standard Format Issues
 
-| Error | Solution |
-|-------|----------|
-| "Category is required" | Add category column with values |
-| "ModelNo is required" | Add ModelNo column, ensure unique |
-| "Price parsing failed" | Use numeric format (e.g., 1500 not "Rs. 1500") |
-| "Variants JSON invalid" | Use proper JSON format |
+| Error                   | Solution                                       |
+| ----------------------- | ---------------------------------------------- |
+| "Category is required"  | Add category column with values                |
+| "ModelNo is required"   | Add ModelNo column, ensure unique              |
+| "Price parsing failed"  | Use numeric format (e.g., 1500 not "Rs. 1500") |
+| "Variants JSON invalid" | Use proper JSON format                         |
 
 ### Matrix Format Issues
 
-| Error | Solution |
-|-------|----------|
-| "ModelNo is required" | Check column C for Product 1, K for Product 2 |
-| "Size is required" | Check column D for Product 1, L for Product 2 |
-| "Price parsing failed" | Ensure format is "Rs. X,XXX" or numeric |
+| Error                   | Solution                                      |
+| ----------------------- | --------------------------------------------- |
+| "ModelNo is required"   | Check column C for Product 1, K for Product 2 |
+| "Size is required"      | Check column D for Product 1, L for Product 2 |
+| "Price parsing failed"  | Ensure format is "Rs. X,XXX" or numeric       |
 | "GST extraction failed" | Use format "HSN XXXX GST YY%" or default used |
-| "No data found" | Check rows 2, 6, 10, etc. contain data |
+| "No data found"         | Check rows 2, 6, 10, etc. contain data        |
 
 ---
 
 ## Performance Comparison
 
 ### Standard Format
+
 - Rows per file: 10,000 recommended
 - Products per file: 10,000
 - Typical time: 5-10 minutes
 
 ### Matrix Format
+
 - Rows per file: 5,000 recommended (since 2 products per row)
 - Products per file: 10,000
 - Typical time: 5-10 minutes
@@ -248,6 +262,7 @@ Row 8: [More refs] | [More refs]
 ## Choosing Between Formats
 
 ### Use Standard Format If:
+
 - ✅ Each product has unique category
 - ✅ Products have multiple variants (not just size)
 - ✅ You have video URLs
@@ -255,6 +270,7 @@ Row 8: [More refs] | [More refs]
 - ✅ You prefer flat structure
 
 ### Use Matrix Format If:
+
 - ✅ All products have same GST
 - ✅ Multiple size variants per product
 - ✅ Space-efficient layout preferred
@@ -267,6 +283,7 @@ Row 8: [More refs] | [More refs]
 ## Examples
 
 ### Standard Format Complete Example
+
 ```
 Category,ModelNo,ProductName,Slug,Description,ImageUrl,GstPercent,IsCustomizable
 Trophy,TPHY001,Gold Trophy,gold-trophy,Premium award,https://example.com/gold.jpg,18,No
@@ -274,6 +291,7 @@ Crystal,CRYS001,Crystal Award,crystal-award,Elegant crystal,https://example.com/
 ```
 
 ### Matrix Format Complete Example
+
 ```
 [Row 2]
 [Col C: TPHY-1][Col D: Small][Col E: 50][Col F: Rs. 2,500][Col H: HSN 7018 GST 18%] | [Col K: CRYS-1][Col L: M][Col M: 75][Col N: Rs. 3,200][Col P: HSN 7018 GST 18%]
@@ -296,4 +314,3 @@ curl http://localhost:5000/api/bulkupload/template -o template_standard.csv
 # Get Matrix Format Template
 curl http://localhost:5000/api/bulkupload/template-matrix -o template_matrix.txt
 ```
-

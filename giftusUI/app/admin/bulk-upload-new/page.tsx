@@ -21,8 +21,15 @@ interface UploadStatus {
   data?: UploadResponse;
 }
 
+const CATEGORIES = [
+  { id: 'WOODEN_METAL_TROPHY', name: 'WOODEN & METAL TROPHY' },
+  { id: 'CRYSTAL_TROPHY', name: 'CRYSTAL TROPHY' },
+  { id: 'PREMIUM_WOODEN_METAL', name: 'PREMIUM WOODEN & METAL TROPHY' }
+];
+
 export default function BulkUploadPage() {
   const [file, setFile] = useState<File | null>(null);
+  const [selectedCategory, setSelectedCategory] = useState<string>('');
   const [status, setStatus] = useState<UploadStatus>({ type: 'idle' });
   const [dragActive, setDragActive] = useState(false);
 
@@ -102,34 +109,80 @@ export default function BulkUploadPage() {
       return;
     }
 
+    if (!selectedCategory) {
+      setStatus({
+        type: 'error',
+        message: 'Please select a category first'
+      });
+      return;
+    }
+
     setStatus({ type: 'uploading' });
 
     try {
       const formData = new FormData();
       formData.append('file', file);
+      formData.append('category', selectedCategory);
 
-      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/bulkupload/upload`, {
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/bulkupload/upload-matrix`, {
         method: 'POST',
         body: formData
       });
 
       if (!response.ok) {
-        const errorData = await response.json();
+        const errorText = await response.text();
+        console.error('[UPLOAD ERROR] Response status:', response.status);
+        console.error('[UPLOAD ERROR] Response text:', errorText);
+        
+        try {
+          const errorData = JSON.parse(errorText);
+          setStatus({
+            type: 'error',
+            message: errorData.error || 'Upload failed'
+          });
+        } catch (parseError) {
+          setStatus({
+            type: 'error',
+            message: `Upload failed with status ${response.status}: ${errorText || 'No response body'}`
+          });
+        }
+        return;
+      }
+
+      const responseText = await response.text();
+      console.log('[UPLOAD SUCCESS] Response text:', responseText);
+      console.log('[UPLOAD SUCCESS] Response status:', response.status);
+      
+      if (!responseText) {
         setStatus({
           type: 'error',
-          message: errorData.error || 'Upload failed'
+          message: 'Empty response from server'
         });
         return;
       }
 
-      const data: UploadResponse = await response.json();
-      setStatus({
-        type: 'success',
-        message: 'Bulk upload completed successfully!',
-        data
-      });
-      setFile(null);
+      try {
+        const data: UploadResponse = JSON.parse(responseText);
+        console.log('[UPLOAD SUCCESS] Parsed data:', data);
+        console.log('[UPLOAD SUCCESS] Summary:', data?.summary);
+        
+        setStatus({
+          type: 'success',
+          message: 'Bulk upload completed successfully!',
+          data
+        });
+        setFile(null);
+        setSelectedCategory('');
+      } catch (parseError) {
+        console.error('[UPLOAD PARSE ERROR]', parseError);
+        console.error('[UPLOAD PARSE ERROR] Response text:', responseText);
+        setStatus({
+          type: 'error',
+          message: `Failed to parse server response: ${parseError instanceof Error ? parseError.message : 'Unknown error'}`
+        });
+      }
     } catch (error) {
+      console.error('[UPLOAD EXCEPTION]', error);
       setStatus({
         type: 'error',
         message: error instanceof Error ? error.message : 'Upload failed'
@@ -146,6 +199,34 @@ export default function BulkUploadPage() {
         </div>
 
         <div className="space-y-6">
+          {/* Category Selection */}
+          <Card className="bg-slate-800 border-slate-700">
+            <CardHeader>
+              <CardTitle className="text-white">Select Category</CardTitle>
+              <CardDescription>Choose the category for these products</CardDescription>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-3">
+                {CATEGORIES.map((category) => (
+                  <label
+                    key={category.id}
+                    className="flex items-center p-4 border border-slate-600 rounded-lg cursor-pointer hover:bg-slate-700/50 transition-colors"
+                  >
+                    <input
+                      type="radio"
+                      name="category"
+                      value={category.id}
+                      checked={selectedCategory === category.id}
+                      onChange={(e) => setSelectedCategory(e.target.value)}
+                      className="w-4 h-4 text-blue-600 cursor-pointer"
+                    />
+                    <span className="ml-3 text-white font-medium">{category.name}</span>
+                  </label>
+                ))}
+              </div>
+            </CardContent>
+          </Card>
+
           {/* Template Download */}
           <Card className="bg-slate-800 border-slate-700">
             <CardHeader>
@@ -250,33 +331,39 @@ export default function BulkUploadPage() {
                 </CardTitle>
               </CardHeader>
               <CardContent className="space-y-4">
-                <div className="grid grid-cols-3 gap-4">
-                  <div className="bg-slate-700/50 rounded-lg p-4">
-                    <p className="text-slate-400 text-sm">Total Rows</p>
-                    <p className="text-2xl font-bold text-white">{status.data.summary.totalRows}</p>
-                  </div>
-                  <div className="bg-green-700/20 rounded-lg p-4">
-                    <p className="text-green-400 text-sm">Successful</p>
-                    <p className="text-2xl font-bold text-green-400">{status.data.summary.successfulRows}</p>
-                  </div>
-                  <div className="bg-red-700/20 rounded-lg p-4">
-                    <p className="text-red-400 text-sm">Failed</p>
-                    <p className="text-2xl font-bold text-red-400">{status.data.summary.failedRows}</p>
-                  </div>
-                </div>
+                {status.data && status.data.summary ? (
+                  <>
+                    <div className="grid grid-cols-3 gap-4">
+                      <div className="bg-slate-700/50 rounded-lg p-4">
+                        <p className="text-slate-400 text-sm">Total Rows</p>
+                        <p className="text-2xl font-bold text-white">{status.data.summary.totalRows}</p>
+                      </div>
+                      <div className="bg-green-700/20 rounded-lg p-4">
+                        <p className="text-green-400 text-sm">Successful</p>
+                        <p className="text-2xl font-bold text-green-400">{status.data.summary.successfulRows}</p>
+                      </div>
+                      <div className="bg-red-700/20 rounded-lg p-4">
+                        <p className="text-red-400 text-sm">Failed</p>
+                        <p className="text-2xl font-bold text-red-400">{status.data.summary.failedRows}</p>
+                      </div>
+                    </div>
 
-                {status.data.summary.errors.length > 0 && (
-                  <div className="bg-red-700/10 border border-red-700 rounded-lg p-4">
-                    <p className="text-red-400 font-medium mb-2">Errors:</p>
-                    <ul className="text-red-300 text-sm space-y-1">
-                      {status.data.summary.errors.slice(0, 5).map((error, index) => (
-                        <li key={index}>• {error}</li>
-                      ))}
-                      {status.data.summary.errors.length > 5 && (
-                        <li>• ... and {status.data.summary.errors.length - 5} more errors</li>
-                      )}
-                    </ul>
-                  </div>
+                    {status.data.summary.errors && status.data.summary.errors.length > 0 && (
+                      <div className="bg-red-700/10 border border-red-700 rounded-lg p-4">
+                        <p className="text-red-400 font-medium mb-2">Errors:</p>
+                        <ul className="text-red-300 text-sm space-y-1">
+                          {status.data.summary.errors.slice(0, 5).map((error, index) => (
+                            <li key={index}>• {error}</li>
+                          ))}
+                          {status.data.summary.errors.length > 5 && (
+                            <li>• ... and {status.data.summary.errors.length - 5} more errors</li>
+                          )}
+                        </ul>
+                      </div>
+                    )}
+                  </>
+                ) : (
+                  <p className="text-slate-400">Upload successful but summary data not available</p>
                 )}
               </CardContent>
             </Card>

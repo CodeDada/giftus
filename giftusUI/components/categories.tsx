@@ -4,19 +4,22 @@ import { ArrowUpRight } from "lucide-react"
 
 const categories = [
   {
-    name: "Trophies",
+    name: "WOODEN_METAL_TROPHY",
+    displayName: "Wooden & Metal Trophies",
     description: "Classic cups, figurines, and custom designs for sports, corporate events, and competitions.",
     image: "/images/trophy.jpg",
     count: "120+ designs",
   },
   {
-    name: "Awards",
+    name: "CRYSTAL_TROPHY",
+    displayName: "Crystal Trophy",
     description: "Crystal, acrylic, and wooden plaques for employee recognition and special achievements.",
     image: "/images/award.jpg",
     count: "85+ designs",
   },
   {
-    name: "Gifts",
+    name: "MEDALS",
+    displayName: "Medals",
     description: "Personalized corporate gifts, medals, and mementos for every occasion.",
     image: "/images/gifts.jpg",
     count: "200+ items",
@@ -45,14 +48,14 @@ export function Categories() {
           {categories.map((category) => (
             <Link
               key={category.name}
-              href="#"
+              href={`/category/${encodeURIComponent(category.name)}`}
               className="group relative bg-card rounded-lg overflow-hidden border border-border hover:border-foreground/20 transition-all duration-300"
             >
               {/* Image */}
               <div className="aspect-[4/3] relative overflow-hidden bg-muted">
                 <Image
                   src={category.image || "/placeholder.svg"}
-                  alt={category.name}
+                  alt={category.displayName}
                   fill
                   className="object-cover group-hover:scale-105 transition-transform duration-500"
                 />
@@ -63,7 +66,7 @@ export function Categories() {
                 <div className="flex items-start justify-between gap-4">
                   <div>
                     <h3 className="text-xl font-semibold text-foreground group-hover:text-foreground/80 transition-colors">
-                      {category.name}
+                      {category.displayName}
                     </h3>
                     <p className="text-sm text-muted-foreground mt-1">
                       {category.count}
