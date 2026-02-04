@@ -1,0 +1,114 @@
+#!/bin/bash
+
+# Giftus Deployment Script
+# This script pulls the latest code from GitHub and restarts all services
+# Usage: ./deploy.sh
+
+set -e  # Exit on error
+
+BLUE='\033[0;34m'
+GREEN='\033[0;32m'
+YELLOW='\033[1;33m'
+RED='\033[0;31m'
+NC='\033[0m' # No Color
+
+echo -e "${BLUE}========================================${NC}"
+echo -e "${BLUE}  Giftus Deployment Script${NC}"
+echo -e "${BLUE}========================================${NC}"
+echo ""
+
+# Check if running as root
+if [[ $EUID -ne 0 ]]; then
+   echo -e "${RED}❌ This script must be run as root${NC}"
+   echo "Use: sudo ./deploy.sh"
+   exit 1
+fi
+
+# Define paths
+PROJECT_PATH="/home/giftus"
+API_PATH="$PROJECT_PATH/giftusApi"
+UI_PATH="$PROJECT_PATH/giftusUI"
+API_PUBLISH_PATH="/var/www/giftus-api"
+
+# Step 1: Pull latest code
+echo -e "${YELLOW}[1/6] Pulling latest code from GitHub...${NC}"
+cd "$PROJECT_PATH"
+git pull origin main
+echo -e "${GREEN}✅ Code pulled successfully${NC}"
+echo ""
+
+# Step 2: Deploy API
+echo -e "${YELLOW}[2/6] Deploying .NET API...${NC}"
+cd "$API_PATH"
+echo "  - Cleaning old build..."
+rm -rf bin obj "$API_PUBLISH_PATH"/*
+echo "  - Restoring dependencies..."
+dotnet restore giftusApi.csproj > /dev/null 2>&1
+echo "  - Publishing to $API_PUBLISH_PATH..."
+dotnet publish -c Release -o "$API_PUBLISH_PATH" giftusApi.csproj > /dev/null 2>&1
+echo -e "${GREEN}✅ API deployed successfully${NC}"
+echo ""
+
+# Step 3: Restart API
+echo -e "${YELLOW}[3/6] Restarting API service...${NC}"
+systemctl restart giftus-api
+sleep 2
+
+# Check if API is running
+if systemctl is-active --quiet giftus-api; then
+    echo -e "${GREEN}✅ API service running${NC}"
+else
+    echo -e "${RED}❌ API service failed to start${NC}"
+    systemctl status giftus-api
+    exit 1
+fi
+echo ""
+
+# Step 4: Deploy UI
+echo -e "${YELLOW}[4/6] Deploying Next.js UI...${NC}"
+cd "$UI_PATH"
+echo "  - Installing dependencies..."
+npm install > /dev/null 2>&1
+echo "  - Building production bundle..."
+export NEXT_PUBLIC_API_URL=https://www.trophybazaar.in
+npm run build > /dev/null 2>&1
+echo -e "${GREEN}✅ UI built successfully${NC}"
+echo ""
+
+# Step 5: Restart UI
+echo -e "${YELLOW}[5/6] Restarting UI service...${NC}"
+systemctl restart giftus-ui
+sleep 2
+
+# Check if UI is running
+if systemctl is-active --quiet giftus-ui; then
+    echo -e "${GREEN}✅ UI service running${NC}"
+else
+    echo -e "${RED}❌ UI service failed to start${NC}"
+    systemctl status giftus-ui
+    exit 1
+fi
+echo ""
+
+# Step 6: Verify all services
+echo -e "${YELLOW}[6/6] Verifying all services...${NC}"
+echo ""
+echo "Service Status:"
+echo "  API:   $(systemctl is-active giftus-api)"
+echo "  UI:    $(systemctl is-active giftus-ui)"
+echo "  Nginx: $(systemctl is-active nginx)"
+echo "  DB:    $(systemctl is-active postgresql)"
+echo ""
+
+# Final summary
+echo -e "${BLUE}========================================${NC}"
+echo -e "${GREEN}✅ Deployment Complete!${NC}"
+echo -e "${BLUE}========================================${NC}"
+echo ""
+echo "Your application is live at:"
+echo -e "${BLUE}  🌐 https://www.trophybazaar.in${NC}"
+echo ""
+echo "Quick test commands:"
+echo "  curl https://www.trophybazaar.in/api/products"
+echo "  curl https://www.trophybazaar.in/"
+echo ""
