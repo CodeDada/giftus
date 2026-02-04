@@ -10,10 +10,20 @@
  * Node 18+ includes global fetch; the file dynamically imports `node-fetch` as a fallback.
  */
 
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5056";
+// Determine API URL based on environment
+let API_BASE_URL: string;
+
+if (typeof window !== 'undefined') {
+  // Browser/Client-side
+  API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5056";
+} else {
+  // Server-side
+  API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5056";
+}
 
 console.log("[API Handler] API_BASE_URL:", API_BASE_URL);
 console.log("[API Handler] NEXT_PUBLIC_API_URL env:", process.env.NEXT_PUBLIC_API_URL);
+console.log("[API Handler] Environment:", typeof window !== 'undefined' ? 'browser' : 'server');
 
 // Type definitions for API responses
 export interface HelloWorldResponse {

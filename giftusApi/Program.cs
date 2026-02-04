@@ -25,11 +25,19 @@ builder.Services.AddDbContext<GiftusDbContext>(options =>
 
 builder.Services.AddCors(options =>
 {
-    options.AddPolicy("AllowAll", builder =>
+    options.AddPolicy("AllowGiftus", builder =>
     {
-        builder.AllowAnyOrigin()
-               .AllowAnyMethod()
-               .AllowAnyHeader();
+        builder.WithOrigins(
+                "http://localhost:3000",
+                "http://localhost:5056",
+                "https://trophybazaar.in",
+                "https://www.trophybazaar.in",
+                "http://trophybazaar.in",
+                "http://www.trophybazaar.in"
+            )
+            .AllowAnyMethod()
+            .AllowAnyHeader()
+            .AllowCredentials();
     });
 });
 
@@ -42,7 +50,7 @@ if (app.Environment.IsDevelopment())
 }
 
 // Apply CORS BEFORE HTTPS redirect so preflight requests work
-app.UseCors("AllowAll");
+app.UseCors("AllowGiftus");
 
 // Only use HTTPS redirect in production
 if (!app.Environment.IsDevelopment())
