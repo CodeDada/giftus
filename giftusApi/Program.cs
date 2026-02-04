@@ -1,5 +1,6 @@
 using giftusApi.Data;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.FileProviders;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -52,19 +53,38 @@ if (!app.Environment.IsDevelopment())
 // Serve static files from wwwroot and resources directories
 app.UseStaticFiles();
 
+// Determine the resources path based on environment
+string resourcesPath;
+if (app.Environment.IsDevelopment())
+{
+    // Development: Look for resources in parent directories
+    resourcesPath = Path.Combine(Directory.GetCurrentDirectory(), "..", "..", "resources");
+}
+else
+{
+    // Production: Use absolute path to shared resources folder
+    resourcesPath = "/home/giftus/resources";
+}
+
+// Ensure the path exists
+if (!Directory.Exists(resourcesPath))
+{
+    Directory.CreateDirectory(resourcesPath);
+}
+
 // Custom middleware to handle image URL normalization (with fallback for old filenames with spaces)
 app.Use(async (context, next) =>
 {
     if (context.Request.Path.StartsWithSegments("/resources/images"))
     {
         var path = context.Request.Path.Value;
-        var fullPath = Path.Combine(Directory.GetCurrentDirectory(), "..", path.TrimStart('/'));
+        var fullPath = Path.Combine(resourcesPath, path.Replace("/resources/", "").TrimStart('/'));
 
         // If file doesn't exist with hyphens, try with spaces
         if (!System.IO.File.Exists(fullPath) && path.Contains("-base."))
         {
             var pathWithSpaces = path.Replace("-base.", " base.");
-            var fallbackPath = Path.Combine(Directory.GetCurrentDirectory(), "..", pathWithSpaces.TrimStart('/'));
+            var fallbackPath = Path.Combine(resourcesPath, pathWithSpaces.Replace("/resources/", "").TrimStart('/'));
 
             if (System.IO.File.Exists(fallbackPath))
             {
@@ -79,8 +99,7 @@ app.Use(async (context, next) =>
 
 app.UseStaticFiles(new StaticFileOptions
 {
-    FileProvider = new Microsoft.Extensions.FileProviders.PhysicalFileProvider(
-        Path.Combine(Directory.GetCurrentDirectory(), "..", "resources")),
+    FileProvider = new PhysicalFileProvider(resourcesPath),
     RequestPath = "/resources"
 });
 
