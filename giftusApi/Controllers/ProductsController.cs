@@ -323,7 +323,10 @@ public class ProductsController : ControllerBase
                 ? null
                 : product.BaseImageUrl.StartsWith("http")
                     ? product.BaseImageUrl
-                    : $"http://localhost:5056{(product.BaseImageUrl.StartsWith("/") ? "" : "/")}{product.BaseImageUrl}",
+                    // Return relative path for Nginx to proxy
+                    : product.BaseImageUrl.StartsWith("/")
+                        ? product.BaseImageUrl
+                        : $"/{product.BaseImageUrl}",
             VideoUrl = product.VideoUrl,
             ShortDescription = product.ShortDescription,
             GstPercent = product.GstPercent,
