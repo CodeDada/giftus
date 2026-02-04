@@ -11,17 +11,18 @@
  */
 
 // Determine API URL based on environment
+// Use relative paths for Nginx proxying
 let API_BASE_URL: string;
 
 if (typeof window !== 'undefined') {
-  // Browser/Client-side
-  API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5056";
+  // Browser/Client-side: Use relative path so Nginx proxies to /api
+  API_BASE_URL = "";
 } else {
-  // Server-side
+  // Server-side: Use environment variable if available, otherwise localhost
   API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5056";
 }
 
-console.log("[API Handler] API_BASE_URL:", API_BASE_URL);
+console.log("[API Handler] API_BASE_URL:", API_BASE_URL || "(relative path via Nginx)");
 console.log("[API Handler] NEXT_PUBLIC_API_URL env:", process.env.NEXT_PUBLIC_API_URL);
 console.log("[API Handler] Environment:", typeof window !== 'undefined' ? 'browser' : 'server');
 

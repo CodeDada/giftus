@@ -39,8 +39,10 @@ export default function CategoryPage() {
     const fetchProducts = async () => {
       try {
         setLoading(true)
+        
+        // Use relative path so Nginx can proxy to backend
         const response = await fetch(
-          `http://localhost:5056/api/products/category-by-name/${encodeURIComponent(categoryName)}`
+          `/api/products/category-by-name/${encodeURIComponent(categoryName)}`
         )
         
         if (!response.ok) {
