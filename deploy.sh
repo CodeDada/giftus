@@ -42,10 +42,10 @@ echo -e "${YELLOW}[2/6] Deploying .NET API...${NC}"
 cd "$API_PATH"
 echo "  - Cleaning old build..."
 rm -rf bin obj "$API_PUBLISH_PATH"/*
-echo "  - Restoring dependencies..."
-dotnet restore giftusApi.csproj > /dev/null 2>&1
+echo "  - Restoring dependencies (this may take 1-2 minutes)..."
+dotnet restore giftusApi.csproj --verbosity quiet
 echo "  - Publishing to $API_PUBLISH_PATH..."
-dotnet publish -c Release -o "$API_PUBLISH_PATH" giftusApi.csproj > /dev/null 2>&1
+dotnet publish -c Release -o "$API_PUBLISH_PATH" giftusApi.csproj --verbosity quiet
 echo -e "${GREEN}✅ API deployed successfully${NC}"
 echo ""
 
@@ -68,10 +68,10 @@ echo ""
 echo -e "${YELLOW}[4/6] Deploying Next.js UI...${NC}"
 cd "$UI_PATH"
 echo "  - Installing dependencies..."
-npm install > /dev/null 2>&1
-echo "  - Building production bundle..."
+npm install --quiet
+echo "  - Building production bundle (this may take 2-3 minutes)..."
 export NEXT_PUBLIC_API_URL=https://www.trophybazaar.in
-npm run build > /dev/null 2>&1
+npm run build --quiet
 echo -e "${GREEN}✅ UI built successfully${NC}"
 echo ""
 
