@@ -6,6 +6,10 @@
 
 set -e  # Exit on error
 
+# Set dotnet path explicitly
+export PATH="/root/.dotnet:$PATH"
+export DOTNET_ROOT="/root/.dotnet"
+
 BLUE='\033[0;34m'
 GREEN='\033[0;32m'
 YELLOW='\033[1;33m'
@@ -22,6 +26,13 @@ if [[ $EUID -ne 0 ]]; then
    echo -e "${RED}❌ This script must be run as root${NC}"
    echo "Use: sudo ./deploy.sh"
    exit 1
+fi
+
+# Verify dotnet is available
+if ! command -v dotnet &> /dev/null; then
+    echo -e "${RED}❌ dotnet command not found${NC}"
+    echo "Please ensure .NET SDK is installed"
+    exit 1
 fi
 
 # Define paths
