@@ -202,10 +202,13 @@ export default function CategoryPage() {
                   </div>
 
                   {/* Action Button */}
-                  <button className="w-full flex items-center justify-center gap-2 bg-primary text-primary-foreground py-2 rounded-lg hover:bg-primary/90 transition-colors">
+                  <Link
+                    href={`/product/${product.id}`}
+                    className="w-full flex items-center justify-center gap-2 bg-primary text-primary-foreground py-2 rounded-lg hover:bg-primary/90 transition-colors"
+                  >
                     <ShoppingCart className="h-4 w-4" />
                     View Details
-                  </button>
+                  </Link>
                 </div>
               </div>
             ))}

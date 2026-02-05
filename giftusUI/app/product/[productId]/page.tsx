@@ -1,0 +1,262 @@
+'use client'
+
+import { useEffect, useState } from 'react'
+import { useParams } from 'next/navigation'
+import Image from 'next/image'
+import { ArrowLeft, ShoppingCart, Share2, Heart } from 'lucide-react'
+import Link from 'next/link'
+import { Header } from '@/components/header'
+import { Footer } from '@/components/footer'
+
+interface ProductVariant {
+  id: number
+  variantName: string
+  variantValue: string
+  price: number
+  stockQty: number
+}
+
+interface Product {
+  id: number
+  modelNo: string
+  name: string
+  shortDescription: string
+  baseImageUrl: string
+  gstPercent: number
+  isCustomizable: boolean
+  isActive: boolean
+  variants: ProductVariant[]
+  videoUrl?: string
+}
+
+export default function ProductDetailPage() {
+  const params = useParams()
+  const productId = params.productId as string
+  const [product, setProduct] = useState<Product | null>(null)
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState<string | null>(null)
+  const [selectedVariant, setSelectedVariant] = useState<ProductVariant | null>(null)
+
+  useEffect(() => {
+    const fetchProduct = async () => {
+      try {
+        setLoading(true)
+        
+        // Determine API URL based on environment
+        const apiUrl = process.env.NODE_ENV === 'development' 
+          ? 'http://localhost:5056'
+          : (process.env.NEXT_PUBLIC_API_URL || '');
+        
+        const response = await fetch(
+          `${apiUrl}/api/products/${productId}`
+        )
+        
+        if (!response.ok) {
+          throw new Error(`Failed to fetch product: ${response.statusText}`)
+        }
+        
+        const data = await response.json()
+        setProduct(data)
+        
+        // Set first variant as selected by default
+        if (data.variants && data.variants.length > 0) {
+          setSelectedVariant(data.variants[0])
+        }
+        
+        setError(null)
+      } catch (err) {
+        console.error('Error fetching product:', err)
+        setError(err instanceof Error ? err.message : 'Failed to load product')
+      } finally {
+        setLoading(false)
+      }
+    }
+
+    if (productId) {
+      fetchProduct()
+    }
+  }, [productId])
+
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-gradient-to-b from-background to-secondary/30 py-12">
+        <div className="mx-auto max-w-7xl px-6 lg:px-8">
+          <div className="text-center">
+            <p className="text-muted-foreground">Loading product details...</p>
+          </div>
+        </div>
+      </div>
+    )
+  }
+
+  if (error || !product) {
+    return (
+      <div className="min-h-screen bg-background flex flex-col">
+        <Header />
+        <main className="flex-1">
+          <div className="bg-gradient-to-b from-background to-secondary/30 py-12">
+            <div className="mx-auto max-w-7xl px-6 lg:px-8">
+              <Link 
+                href="/#products"
+                className="flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground mb-8 transition-colors"
+              >
+                <ArrowLeft className="h-4 w-4" />
+                Back
+              </Link>
+              <div className="p-4 bg-destructive/10 border border-destructive/30 rounded-lg">
+                <p className="text-destructive">{error || 'Product not found'}</p>
+              </div>
+            </div>
+          </div>
+        </main>
+        <Footer />
+      </div>
+    )
+  }
+
+  return (
+    <div className="min-h-screen bg-background flex flex-col">
+      <Header />
+      <main className="flex-1">
+        <div className="bg-gradient-to-b from-background to-secondary/30 py-12">
+          <div className="mx-auto max-w-7xl px-6 lg:px-8">
+            {/* Back Button */}
+            <Link 
+              href="/#products"
+              className="flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground mb-8 transition-colors"
+            >
+              <ArrowLeft className="h-4 w-4" />
+              Back to Products
+            </Link>
+
+            {/* Product Detail Grid */}
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+              {/* Image Section */}
+              <div className="flex flex-col gap-4">
+                <div className="aspect-square relative overflow-hidden bg-muted rounded-lg border border-border">
+                  {product.baseImageUrl ? (
+                    <Image
+                      src={product.baseImageUrl}
+                      alt={product.modelNo}
+                      fill
+                      className="object-cover"
+                      priority
+                    />
+                  ) : (
+                    <div className="w-full h-full flex items-center justify-center bg-secondary">
+                      <span className="text-muted-foreground">No image available</span>
+                    </div>
+                  )}
+                </div>
+                
+                {/* Video Link (if available) */}
+                {product.videoUrl && (
+                  <a 
+                    href={product.videoUrl}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="inline-flex items-center justify-center gap-2 p-3 bg-secondary hover:bg-secondary/80 rounded-lg text-foreground transition-colors"
+                  >
+                    <span>📹 View Product Video</span>
+                  </a>
+                )}
+              </div>
+
+              {/* Details Section */}
+              <div className="flex flex-col gap-6">
+                {/* Title & Model */}
+                <div>
+                  <p className="text-sm font-medium text-primary mb-2">Model: {product.modelNo}</p>
+                  <h1 className="text-4xl font-bold text-foreground mb-2">{product.name}</h1>
+                  {product.shortDescription && (
+                    <p className="text-lg text-muted-foreground">{product.shortDescription}</p>
+                  )}
+                </div>
+
+                {/* Variants/Sizes Section */}
+                <div>
+                  <h3 className="text-lg font-semibold text-foreground mb-4">Available Sizes</h3>
+                  <div className="grid grid-cols-2 gap-3">
+                    {product.variants && product.variants.map((variant) => (
+                      <button
+                        key={variant.id}
+                        onClick={() => setSelectedVariant(variant)}
+                        className={`p-4 rounded-lg border-2 transition-all ${
+                          selectedVariant?.id === variant.id
+                            ? 'border-primary bg-primary/10'
+                            : 'border-border hover:border-foreground/20'
+                        }`}
+                      >
+                        <div className="text-sm font-medium text-foreground">{variant.variantValue}</div>
+                        <div className="text-lg font-bold text-primary">₹{variant.price.toLocaleString('en-IN')}</div>
+                        <div className={`text-xs mt-1 ${variant.stockQty > 0 ? 'text-green-600' : 'text-destructive'}`}>
+                          {variant.stockQty > 0 ? `${variant.stockQty} in stock` : 'Out of stock'}
+                        </div>
+                      </button>
+                    ))}
+                  </div>
+                </div>
+
+                {/* Selected Variant Details */}
+                {selectedVariant && (
+                  <div className="p-4 bg-secondary rounded-lg">
+                    <div className="grid grid-cols-2 gap-4">
+                      <div>
+                        <p className="text-xs text-muted-foreground mb-1">Size</p>
+                        <p className="text-lg font-semibold text-foreground">{selectedVariant.variantValue}</p>
+                      </div>
+                      <div>
+                        <p className="text-xs text-muted-foreground mb-1">Price</p>
+                        <p className="text-lg font-semibold text-foreground">₹{selectedVariant.price.toLocaleString('en-IN')}</p>
+                      </div>
+                    </div>
+                  </div>
+                )}
+
+                {/* Product Info */}
+                <div className="border-t border-border pt-6">
+                  <div className="grid grid-cols-2 gap-6">
+                    <div>
+                      <p className="text-sm text-muted-foreground mb-1">GST Rate</p>
+                      <p className="text-lg font-semibold text-foreground">{product.gstPercent}%</p>
+                    </div>
+                    <div>
+                      <p className="text-sm text-muted-foreground mb-1">Customizable</p>
+                      <p className="text-lg font-semibold text-foreground">{product.isCustomizable ? 'Yes' : 'No'}</p>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Action Buttons */}
+                <div className="flex gap-4 pt-4">
+                  <button className="flex-1 flex items-center justify-center gap-2 bg-primary text-primary-foreground py-3 rounded-lg hover:bg-primary/90 transition-colors font-semibold">
+                    <ShoppingCart className="h-5 w-5" />
+                    Add to Cart
+                  </button>
+                  <button className="flex items-center justify-center gap-2 px-4 py-3 border border-border rounded-lg hover:bg-secondary transition-colors">
+                    <Heart className="h-5 w-5" />
+                  </button>
+                  <button className="flex items-center justify-center gap-2 px-4 py-3 border border-border rounded-lg hover:bg-secondary transition-colors">
+                    <Share2 className="h-5 w-5" />
+                  </button>
+                </div>
+
+                {/* Additional Info Section - Placeholder */}
+                <div className="border-t border-border pt-6">
+                  <h3 className="text-lg font-semibold text-foreground mb-4">Additional Information</h3>
+                  <div className="space-y-3 text-muted-foreground text-sm">
+                    <p>• Premium quality craftsmanship</p>
+                    <p>• Durable and long-lasting materials</p>
+                    <p>• Perfect for corporate gifting</p>
+                    <p className="text-xs italic">More details to be finalized...</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </main>
+      <Footer />
+    </div>
+  )
+}
