@@ -7,10 +7,20 @@
     <GenerateDocumentationFile>false</GenerateDocumentationFile>
     <EnableDefaultRazorContentItems>false</EnableDefaultRazorContentItems>
     <EnableDefaultEmbeddedResourceItems>false</EnableDefaultEmbeddedResourceItems>
+    <EnableDefaultCompileItems>true</EnableDefaultCompileItems>
   </PropertyGroup>
 
   <PropertyGroup Condition=" '$(RunConfiguration)' == 'https' " />
   <PropertyGroup Condition=" '$(RunConfiguration)' == 'http' " />
+  
+  <!-- Explicitly include only .cs files from Controllers, Data, Models, Services -->
+  <ItemGroup>
+    <Compile Include="Controllers/**/*.cs" />
+    <Compile Include="Data/**/*.cs" />
+    <Compile Include="Models/**/*.cs" />
+    <Compile Include="Services/**/*.cs" />
+    <Compile Include="Program.cs" />
+  </ItemGroup>
   
   <ItemGroup>
     <PackageReference Include="EPPlus" Version="7.2.2" />
