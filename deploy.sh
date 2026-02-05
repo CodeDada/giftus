@@ -44,6 +44,13 @@ API_PUBLISH_PATH="/var/www/giftus-api"
 # Step 1: Pull latest code
 echo -e "${YELLOW}[1/6] Pulling latest code from GitHub...${NC}"
 cd "$PROJECT_PATH"
+
+# Reset any local changes that conflict with the pull
+echo "  - Resetting local changes..."
+git reset --hard HEAD
+git clean -fd
+
+# Pull latest code
 git pull origin main
 echo -e "${GREEN}✅ Code pulled successfully${NC}"
 echo ""
