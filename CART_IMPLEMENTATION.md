@@ -136,3 +136,49 @@ Complete shopping cart system with quantity selection, persistent storage, and c
 - All prices calculated in INR with proper formatting
 - GST is estimated at 18% (can be made dynamic per product)
 - Shipping is currently free (can be made configurable)
+
+---
+
+# Branding Update - Giftus to TrophyBazaar
+
+## Date: February 5, 2026
+
+### Changes Made
+
+Complete UI rebranding from "Giftus" to "TrophyBazaar" across all components.
+
+#### Files Modified:
+
+1. **app/layout.tsx**
+   - Page title: `'Giftus - Premium Custom Trophies & Awards'` → `'TrophyBazaar - Premium Custom Trophies & Awards'`
+
+2. **components/header.tsx**
+   - Logo text: `'Giftus'` → `'TrophyBazaar'`
+
+3. **components/footer.tsx**
+   - Brand name: `'Giftus'` → `'TrophyBazaar'`
+   - Email: `hello@giftus.in` → `hello@trophybazaar.in`
+   - Copyright: `© 2024 Giftus` → `© 2024 TrophyBazaar`
+
+4. **components/why-choose.tsx**
+   - Section header: `'Why Giftus'` → `'Why TrophyBazaar'`
+
+5. **lib/cartContext.tsx**
+   - localStorage key: `'giftus_cart'` → `'trophybazaar_cart'`
+   - This clears existing user carts (expected behavior for rebrand)
+
+### Summary
+
+- ✅ Header branding updated
+- ✅ Footer branding updated
+- ✅ Email contact updated
+- ✅ Page title/meta updated
+- ✅ Section headers updated
+- ✅ localStorage key updated for consistency
+- ✅ No old "Giftus" references remaining in UI code
+
+### Deployment Notes
+
+- Cart history from previous "giftus_cart" key will not be available
+- Users will see empty carts after rebrand (acceptable)
+- All visible branding is now consistent across the application

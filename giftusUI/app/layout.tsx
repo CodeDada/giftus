@@ -1,7 +1,6 @@
 import React from "react"
 import type { Metadata } from 'next'
 import { Inter } from 'next/font/google'
-import { Analytics } from '@vercel/analytics/next'
 import { CartProvider } from '@/lib/cartContext'
 import './globals.css'
 
@@ -10,7 +9,6 @@ const _inter = Inter({ subsets: ["latin"] });
 export const metadata: Metadata = {
   title: 'TrophyBazaar - Premium Custom Trophies & Awards',
   description: 'India\'s trusted destination for custom trophies, awards, and corporate gifts. Serving corporates, schools, and event organizers with premium quality products.',
-  generator: 'v0.app',
   icons: {
     icon: [
       {
@@ -41,7 +39,6 @@ export default function RootLayout({
         <CartProvider>
           {children}
         </CartProvider>
-        <Analytics />
       </body>
     </html>
   )
