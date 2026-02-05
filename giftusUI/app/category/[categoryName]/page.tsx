@@ -40,9 +40,13 @@ export default function CategoryPage() {
       try {
         setLoading(true)
         
-        // Use relative path so Nginx can proxy to backend
+        // Determine API URL based on environment
+        const apiUrl = process.env.NODE_ENV === 'development' 
+          ? 'http://localhost:5056'
+          : (process.env.NEXT_PUBLIC_API_URL || '');
+        
         const response = await fetch(
-          `/api/products/category-by-name/${encodeURIComponent(categoryName)}`
+          `${apiUrl}/api/products/category-by-name/${encodeURIComponent(categoryName)}`
         )
         
         if (!response.ok) {
