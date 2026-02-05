@@ -49,7 +49,7 @@ export function WhyChoose() {
         {/* Section Header */}
         <div className="max-w-2xl mb-12 lg:mb-16">
           <p className="text-sm font-medium tracking-wider text-muted-foreground uppercase mb-3">
-            Why Giftus
+            Why TrophyBazaar
           </p>
           <h2 className="text-3xl font-semibold tracking-tight text-foreground sm:text-4xl">
             Trusted by India&apos;s Leading Organizations

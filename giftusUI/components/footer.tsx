@@ -33,7 +33,7 @@ export function Footer() {
           <div className="lg:col-span-2">
             <Link href="/" className="inline-block">
               <span className="text-2xl font-semibold tracking-tight">
-                Giftus
+                TrophyBazaar
               </span>
             </Link>
             <p className="mt-4 text-sm text-primary-foreground/70 max-w-xs leading-relaxed">
@@ -51,11 +51,11 @@ export function Footer() {
                 +91 98765 43210
               </a>
               <a
-                href="mailto:hello@giftus.in"
+                href="mailto:hello@trophybazaar.in"
                 className="flex items-center gap-3 text-sm text-primary-foreground/70 hover:text-primary-foreground transition-colors"
               >
                 <Mail className="h-4 w-4" />
-                hello@giftus.in
+                hello@trophybazaar.in
               </a>
               <div className="flex items-start gap-3 text-sm text-primary-foreground/70">
                 <MapPin className="h-4 w-4 flex-shrink-0 mt-0.5" />
@@ -123,7 +123,7 @@ export function Footer() {
         <div className="mt-12 pt-8 border-t border-primary-foreground/10">
           <div className="flex flex-col sm:flex-row justify-between items-center gap-4">
             <p className="text-sm text-primary-foreground/50">
-              &copy; {new Date().getFullYear()} Giftus. All rights reserved.
+              &copy; {new Date().getFullYear()} TrophyBazaar. All rights reserved.
             </p>
             <div className="flex gap-6 text-sm text-primary-foreground/50">
               <Link href="#" className="hover:text-primary-foreground transition-colors">

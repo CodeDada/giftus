@@ -8,7 +8,7 @@ import './globals.css'
 const _inter = Inter({ subsets: ["latin"] });
 
 export const metadata: Metadata = {
-  title: 'Giftus - Premium Custom Trophies & Awards',
+  title: 'TrophyBazaar - Premium Custom Trophies & Awards',
   description: 'India\'s trusted destination for custom trophies, awards, and corporate gifts. Serving corporates, schools, and event organizers with premium quality products.',
   generator: 'v0.app',
   icons: {
