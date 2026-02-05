@@ -50,6 +50,10 @@ echo "  - Resetting local changes..."
 git reset --hard HEAD
 git clean -fd
 
+# Force fetch and reset to origin
+git fetch origin main
+git reset --hard origin/main
+
 # Pull latest code
 git pull origin main
 echo -e "${GREEN}✅ Code pulled successfully${NC}"
@@ -58,15 +62,27 @@ echo ""
 # Step 2: Deploy API
 echo -e "${YELLOW}[2/6] Deploying .NET API...${NC}"
 cd "$API_PATH"
+
+# Verify the .csproj is correct
+echo "  - Verifying project file..."
+if grep -q "EnableDefaultRazorContentItems" giftusApi.csproj; then
+    echo "    ✅ Project file is correct"
+else
+    echo "    ⚠️  Warning: Project file may not be the latest version"
+fi
+
 echo "  - Aggressive cleanup of build artifacts..."
 rm -rf bin obj "$API_PUBLISH_PATH"/* .vs .vscode .vs/
 dotnet clean giftusApi.csproj --verbosity quiet 2>/dev/null || true
 # Clear nuget cache for this project
 rm -rf ~/.nuget/packages/ 2>/dev/null || true
+
 echo "  - Restoring dependencies (this may take 1-2 minutes)..."
 dotnet restore giftusApi.csproj --verbosity quiet
+
 echo "  - Building project..."
 dotnet build giftusApi.csproj -c Release --verbosity quiet
+
 echo "  - Publishing to $API_PUBLISH_PATH..."
 dotnet publish -c Release -o "$API_PUBLISH_PATH" giftusApi.csproj --verbosity quiet
 echo -e "${GREEN}✅ API deployed successfully${NC}"
