@@ -1,6 +1,7 @@
 'use client'
 
 import { useEffect, useState } from 'react'
+import { useRouter } from 'next/navigation'
 import Image from 'next/image'
 import { ArrowLeft, Trash2, Plus, Minus } from 'lucide-react'
 import Link from 'next/link'
@@ -9,6 +10,7 @@ import { Footer } from '@/components/footer'
 import { useCart, CartItem } from '@/lib/cartContext'
 
 export default function CartPage() {
+  const router = useRouter()
   const { items, removeFromCart, updateQuantity, getTotalPrice } = useCart()
   const [mounted, setMounted] = useState(false)
 
@@ -111,7 +113,10 @@ export default function CartPage() {
                     </div>
 
                     {/* Checkout Button */}
-                    <button className="w-full bg-primary text-primary-foreground py-3 rounded-lg hover:bg-primary/90 transition-colors font-semibold mb-3">
+                    <button 
+                      onClick={() => router.push('/checkout')}
+                      className="w-full bg-primary text-primary-foreground py-3 rounded-lg hover:bg-primary/90 transition-colors font-semibold mb-3"
+                    >
                       Proceed to Checkout
                     </button>
 

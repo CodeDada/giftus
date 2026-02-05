@@ -1,4 +1,5 @@
 using giftusApi.Data;
+using giftusApi.Services;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.FileProviders;
 
@@ -22,6 +23,10 @@ var connectionString = builder.Configuration.GetConnectionString("DefaultConnect
 builder.Services.AddDbContext<GiftusDbContext>(options =>
     options.UseSqlServer(connectionString)
 );
+
+// Register application services
+builder.Services.AddScoped<IOrderService, OrderService>();
+builder.Services.AddScoped<IRazorpayService, RazorpayService>();
 
 builder.Services.AddCors(options =>
 {

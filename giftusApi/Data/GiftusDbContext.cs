@@ -18,6 +18,9 @@ public class GiftusDbContext : DbContext
     public DbSet<OrderItem> OrderItems { get; set; }
     public DbSet<OrderCustomization> OrderCustomizations { get; set; }
     public DbSet<Payment> Payments { get; set; }
+    public DbSet<OrderStatusHistory> OrderStatusHistories { get; set; }
+    public DbSet<OrderRefund> OrderRefunds { get; set; }
+    public DbSet<PaymentTransaction> PaymentTransactions { get; set; }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -157,6 +160,46 @@ public class GiftusDbContext : DbContext
                 .WithMany(o => o.Payments)
                 .HasForeignKey(e => e.OrderId)
                 .OnDelete(DeleteBehavior.Restrict);
+        });
+
+        // Configure OrderStatusHistory - Map to existing table name (singular)
+        modelBuilder.Entity<OrderStatusHistory>(entity =>
+        {
+            entity.HasKey(e => e.Id);
+            entity.ToTable("OrderStatusHistory"); // Map to existing table name
+            entity.Property(e => e.CreatedAt).HasDefaultValueSql("SYSDATETIME()");
+
+            entity.HasOne(e => e.Order)
+                .WithMany(o => o.StatusHistory)
+                .HasForeignKey(e => e.OrderId)
+                .OnDelete(DeleteBehavior.Cascade);
+        });
+
+        // Configure OrderRefund - Ensure proper column mapping
+        modelBuilder.Entity<OrderRefund>(entity =>
+        {
+            entity.HasKey(e => e.Id);
+            entity.ToTable("OrderRefunds"); // Map to existing table
+            entity.Property(e => e.RefundReason).HasColumnName("RefundReason");
+            entity.Property(e => e.CreatedAt).HasDefaultValueSql("SYSDATETIME()");
+
+            entity.HasOne(e => e.Order)
+                .WithMany(o => o.Refunds)
+                .HasForeignKey(e => e.OrderId)
+                .OnDelete(DeleteBehavior.Cascade);
+        });
+
+        // Configure PaymentTransaction - Ensure proper column mapping
+        modelBuilder.Entity<PaymentTransaction>(entity =>
+        {
+            entity.HasKey(e => e.Id);
+            entity.ToTable("PaymentTransactions"); // Map to existing table
+            entity.Property(e => e.CreatedAt).HasDefaultValueSql("SYSDATETIME()");
+
+            entity.HasOne(e => e.Order)
+                .WithMany(o => o.PaymentTransactions)
+                .HasForeignKey(e => e.OrderId)
+                .OnDelete(DeleteBehavior.Cascade);
         });
     }
 }
