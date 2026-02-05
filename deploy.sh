@@ -60,8 +60,11 @@ echo -e "${YELLOW}[2/6] Deploying .NET API...${NC}"
 cd "$API_PATH"
 echo "  - Cleaning old build..."
 rm -rf bin obj "$API_PUBLISH_PATH"/*
+dotnet clean giftusApi.csproj --verbosity quiet 2>/dev/null || true
 echo "  - Restoring dependencies (this may take 1-2 minutes)..."
 dotnet restore giftusApi.csproj --verbosity quiet
+echo "  - Building project..."
+dotnet build giftusApi.csproj -c Release --verbosity quiet
 echo "  - Publishing to $API_PUBLISH_PATH..."
 dotnet publish -c Release -o "$API_PUBLISH_PATH" giftusApi.csproj --verbosity quiet
 echo -e "${GREEN}✅ API deployed successfully${NC}"
