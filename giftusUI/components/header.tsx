@@ -2,8 +2,9 @@
 
 import { useState } from "react"
 import Link from "next/link"
-import { Menu, X, Phone } from "lucide-react"
+import { Menu, X, Phone, ShoppingCart } from "lucide-react"
 import { Button } from "@/components/ui/button"
+import { useCart } from "@/lib/cartContext"
 
 const navigation = [
   { name: "Products", href: "#products" },
@@ -15,6 +16,8 @@ const navigation = [
 
 export function Header() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
+  const { getTotalItems } = useCart()
+  const totalItems = getTotalItems()
 
   return (
     <header className="sticky top-0 z-50 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/80 border-b border-border">
@@ -48,11 +51,31 @@ export function Header() {
             <Phone className="h-4 w-4" />
             +91 98765 43210
           </a>
+          <Link href="/cart" className="relative">
+            <button className="inline-flex items-center justify-center rounded-md p-2.5 text-foreground hover:bg-secondary transition-colors">
+              <ShoppingCart className="h-5 w-5" />
+              {totalItems > 0 && (
+                <span className="absolute top-0 right-0 inline-flex items-center justify-center px-2 py-1 text-xs font-bold leading-none text-white transform translate-x-1/2 -translate-y-1/2 bg-red-600 rounded-full">
+                  {totalItems}
+                </span>
+              )}
+            </button>
+          </Link>
           <Button>Get Quote</Button>
         </div>
 
         {/* Mobile menu button */}
-        <div className="flex lg:hidden">
+        <div className="flex lg:hidden gap-2">
+          <Link href="/cart" className="relative">
+            <button className="inline-flex items-center justify-center rounded-md p-2.5 text-foreground hover:bg-secondary transition-colors">
+              <ShoppingCart className="h-5 w-5" />
+              {totalItems > 0 && (
+                <span className="absolute top-0 right-0 inline-flex items-center justify-center px-2 py-1 text-xs font-bold leading-none text-white transform translate-x-1/2 -translate-y-1/2 bg-red-600 rounded-full">
+                  {totalItems}
+                </span>
+              )}
+            </button>
+          </Link>
           <button
             type="button"
             className="inline-flex items-center justify-center rounded-md p-2.5 text-foreground"

@@ -3,10 +3,11 @@
 import { useEffect, useState } from 'react'
 import { useParams } from 'next/navigation'
 import Image from 'next/image'
-import { ArrowLeft, ShoppingCart } from 'lucide-react'
+import { ArrowLeft, ShoppingCart, Plus, Minus } from 'lucide-react'
 import Link from 'next/link'
 import { Header } from '@/components/header'
 import { Footer } from '@/components/footer'
+import { useCart } from '@/lib/cartContext'
 
 interface ProductVariant {
   id: number
@@ -34,6 +35,8 @@ export default function CategoryPage() {
   const [products, setProducts] = useState<Product[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
+  const [quantities, setQuantities] = useState<{ [key: number]: number }>({})
+  const { addToCart } = useCart()
 
   useEffect(() => {
     const fetchProducts = async () => {
@@ -201,14 +204,98 @@ export default function CategoryPage() {
                     </p>
                   </div>
 
-                  {/* Action Button */}
-                  <Link
-                    href={`/product/${product.id}`}
-                    className="w-full flex items-center justify-center gap-2 bg-primary text-primary-foreground py-2 rounded-lg hover:bg-primary/90 transition-colors"
-                  >
-                    <ShoppingCart className="h-4 w-4" />
-                    View Details
-                  </Link>
+                  {/* Action Buttons */}
+                  <div className="flex gap-3">
+                    {quantities[product.id] ? (
+                      <div className="flex-1 flex items-center border border-border rounded-lg bg-primary/5">
+                        <button
+                          onClick={() => {
+                            const newQty = quantities[product.id] - 1
+                            const variant = product.variants && product.variants[0]
+                            if (newQty <= 0) {
+                              // Remove from cart when quantity reaches 0
+                              setQuantities({ ...quantities, [product.id]: 0 })
+                            } else {
+                              // Decrease quantity by 1
+                              if (variant) {
+                                addToCart({
+                                  id: `${product.id}-${variant.id}`,
+                                  productId: product.id,
+                                  variantId: variant.id,
+                                  modelNo: product.modelNo,
+                                  variantValue: variant.variantValue,
+                                  price: variant.price,
+                                  quantity: -1,
+                                  baseImageUrl: product.baseImageUrl,
+                                })
+                              }
+                              setQuantities({ ...quantities, [product.id]: newQty })
+                            }
+                          }}
+                          className="px-3 py-2 hover:bg-secondary transition-colors rounded-l-lg"
+                        >
+                          <Minus className="h-4 w-4" />
+                        </button>
+                        <span className="flex-1 text-center font-semibold text-primary">
+                          {quantities[product.id]}
+                        </span>
+                        <button
+                          onClick={() => {
+                            const newQty = quantities[product.id] + 1
+                            const variant = product.variants && product.variants[0]
+                            if (variant) {
+                              // Increase quantity by 1
+                              addToCart({
+                                id: `${product.id}-${variant.id}`,
+                                productId: product.id,
+                                variantId: variant.id,
+                                modelNo: product.modelNo,
+                                variantValue: variant.variantValue,
+                                price: variant.price,
+                                quantity: 1,
+                                baseImageUrl: product.baseImageUrl,
+                              })
+                            }
+                            setQuantities({ ...quantities, [product.id]: newQty })
+                          }}
+                          className="px-3 py-2 hover:bg-secondary transition-colors rounded-r-lg"
+                        >
+                          <Plus className="h-4 w-4" />
+                        </button>
+                      </div>
+                    ) : (
+                      <button
+                        onClick={() => {
+                          setQuantities({ ...quantities, [product.id]: 1 })
+                          // Add first item to cart immediately
+                          const variant = product.variants && product.variants[0]
+                          if (variant) {
+                            addToCart({
+                              id: `${product.id}-${variant.id}`,
+                              productId: product.id,
+                              variantId: variant.id,
+                              modelNo: product.modelNo,
+                              variantValue: variant.variantValue,
+                              price: variant.price,
+                              quantity: 1,
+                              baseImageUrl: product.baseImageUrl,
+                            })
+                          }
+                        }}
+                        className="flex-1 flex items-center justify-center gap-2 bg-primary text-primary-foreground py-2 rounded-lg hover:bg-primary/90 transition-colors"
+                      >
+                        <ShoppingCart className="h-4 w-4" />
+                        Add to Cart
+                      </button>
+                    )}
+
+                    <Link
+                      href={`/product/${product.id}`}
+                      className="flex-1 flex items-center justify-center gap-2 bg-secondary text-foreground py-2 rounded-lg hover:bg-secondary/80 transition-colors"
+                    >
+                      View Details
+                    </Link>
+                  </div>
                 </div>
               </div>
             ))}

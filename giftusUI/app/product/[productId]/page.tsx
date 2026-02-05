@@ -1,12 +1,13 @@
 'use client'
 
 import { useEffect, useState } from 'react'
-import { useParams } from 'next/navigation'
+import { useParams, useRouter } from 'next/navigation'
 import Image from 'next/image'
-import { ArrowLeft, ShoppingCart, Share2, Heart } from 'lucide-react'
+import { ArrowLeft, ShoppingCart, Share2, Heart, Plus, Minus } from 'lucide-react'
 import Link from 'next/link'
 import { Header } from '@/components/header'
 import { Footer } from '@/components/footer'
+import { useCart } from '@/lib/cartContext'
 
 interface ProductVariant {
   id: number
@@ -31,11 +32,16 @@ interface Product {
 
 export default function ProductDetailPage() {
   const params = useParams()
+  const router = useRouter()
   const productId = params.productId as string
+  const { addToCart } = useCart()
+  
   const [product, setProduct] = useState<Product | null>(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
   const [selectedVariant, setSelectedVariant] = useState<ProductVariant | null>(null)
+  const [quantity, setQuantity] = useState(0)
+  const [cartItems, setCartItems] = useState<{ [key: string]: number }>({})
 
   useEffect(() => {
     const fetchProduct = async () => {
@@ -76,6 +82,31 @@ export default function ProductDetailPage() {
       fetchProduct()
     }
   }, [productId])
+
+  const handleAddToCart = () => {
+    if (!selectedVariant || !product || quantity <= 0) return
+
+    const cartItemId = `${product.id}-${selectedVariant.id}`
+    
+    addToCart({
+      id: cartItemId,
+      productId: product.id,
+      variantId: selectedVariant.id,
+      modelNo: product.modelNo,
+      variantValue: selectedVariant.variantValue,
+      price: selectedVariant.price,
+      quantity: quantity,
+      baseImageUrl: product.baseImageUrl,
+    })
+    
+    // Reset quantity
+    setQuantity(0)
+  }
+
+  const handleQuantityChange = (newQty: number) => {
+    if (newQty < 0) return
+    setQuantity(newQty)
+  }
 
   if (loading) {
     return (
@@ -213,6 +244,8 @@ export default function ProductDetailPage() {
                   </div>
                 )}
 
+
+
                 {/* Product Info */}
                 <div className="border-t border-border pt-6">
                   <div className="grid grid-cols-2 gap-6">
@@ -229,16 +262,101 @@ export default function ProductDetailPage() {
 
                 {/* Action Buttons */}
                 <div className="flex gap-4 pt-4">
-                  <button className="flex-1 flex items-center justify-center gap-2 bg-primary text-primary-foreground py-3 rounded-lg hover:bg-primary/90 transition-colors font-semibold">
-                    <ShoppingCart className="h-5 w-5" />
-                    Add to Cart
-                  </button>
-                  <button className="flex items-center justify-center gap-2 px-4 py-3 border border-border rounded-lg hover:bg-secondary transition-colors">
-                    <Heart className="h-5 w-5" />
-                  </button>
-                  <button className="flex items-center justify-center gap-2 px-4 py-3 border border-border rounded-lg hover:bg-secondary transition-colors">
-                    <Share2 className="h-5 w-5" />
-                  </button>
+                  {quantity > 0 ? (
+                    <>
+                      <div className="flex-1 flex items-center border border-border rounded-lg bg-primary/5">
+                        <button
+                          onClick={() => {
+                            const newQty = quantity - 1
+                            if (newQty <= 0) {
+                              handleQuantityChange(0)
+                            } else {
+                              const variant = selectedVariant
+                              if (variant) {
+                                addToCart({
+                                  id: `${product.id}-${variant.id}`,
+                                  productId: product.id,
+                                  variantId: variant.id,
+                                  modelNo: product.modelNo,
+                                  variantValue: variant.variantValue,
+                                  price: variant.price,
+                                  quantity: -1,
+                                  baseImageUrl: product.baseImageUrl,
+                                })
+                              }
+                              handleQuantityChange(newQty)
+                            }
+                          }}
+                          className="px-3 py-2 hover:bg-secondary transition-colors rounded-l-lg"
+                        >
+                          <Minus className="h-4 w-4" />
+                        </button>
+                        <span className="flex-1 text-center font-semibold text-primary">
+                          {quantity}
+                        </span>
+                        <button
+                          onClick={() => {
+                            const newQty = quantity + 1
+                            const variant = selectedVariant
+                            if (variant) {
+                              addToCart({
+                                id: `${product.id}-${variant.id}`,
+                                productId: product.id,
+                                variantId: variant.id,
+                                modelNo: product.modelNo,
+                                variantValue: variant.variantValue,
+                                price: variant.price,
+                                quantity: 1,
+                                baseImageUrl: product.baseImageUrl,
+                              })
+                            }
+                            handleQuantityChange(newQty)
+                          }}
+                          className="px-3 py-2 hover:bg-secondary transition-colors rounded-r-lg"
+                        >
+                          <Plus className="h-4 w-4" />
+                        </button>
+                      </div>
+                      <button
+                        onClick={() => router.push('/cart')}
+                        className="flex-1 flex items-center justify-center gap-2 bg-green-600 text-white py-3 rounded-lg hover:bg-green-700 transition-colors font-semibold"
+                      >
+                        Proceed to Checkout
+                      </button>
+                    </>
+                  ) : (
+                    <>
+                      <button
+                        onClick={() => {
+                          handleQuantityChange(1)
+                          const variant = selectedVariant
+                          if (variant) {
+                            addToCart({
+                              id: `${product.id}-${variant.id}`,
+                              productId: product.id,
+                              variantId: variant.id,
+                              modelNo: product.modelNo,
+                              variantValue: variant.variantValue,
+                              price: variant.price,
+                              quantity: 1,
+                              baseImageUrl: product.baseImageUrl,
+                            })
+                          }
+                        }}
+                        disabled={!selectedVariant || selectedVariant.stockQty <= 0}
+                        className="flex-1 flex items-center justify-center gap-2 bg-primary text-primary-foreground py-3 rounded-lg hover:bg-primary/90 transition-colors font-semibold disabled:opacity-50 disabled:cursor-not-allowed"
+                      >
+                        <ShoppingCart className="h-5 w-5" />
+                        Add to Cart
+                      </button>
+                      <button className="flex items-center justify-center gap-2 px-4 py-3 border border-border rounded-lg hover:bg-secondary transition-colors">
+                        <Heart className="h-5 w-5" />
+                      </button>
+                      <button className="flex items-center justify-center gap-2 px-4 py-3 border border-border rounded-lg hover:bg-secondary transition-colors">
+                        <Share2 className="h-5 w-5" />
+                      </button>
+                    </>
+                  )}
                 </div>
 
                 {/* Additional Info Section - Placeholder */}
