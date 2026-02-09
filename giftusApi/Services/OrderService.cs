@@ -60,10 +60,24 @@ public class OrderService : IOrderService
 
                 foreach (var itemRequest in request.Items)
                 {
-                    var product = await _context.Products.FindAsync(itemRequest.ProductId)
+                    var product = await _context.Products
+                        .Include(p => p.ProductVariants)
+                        .FirstOrDefaultAsync(p => p.Id == itemRequest.ProductId)
                         ?? throw new Exception($"Product {itemRequest.ProductId} not found");
 
-                    var gstRate = 18m; // Default GST rate
+                    var variant = product.ProductVariants?.FirstOrDefault(v => v.Id == itemRequest.VariantId)
+                        ?? throw new Exception($"Variant {itemRequest.VariantId} not found for product {itemRequest.ProductId}");
+
+                    // Check if sufficient stock is available
+                    if (variant.StockQty < itemRequest.Quantity)
+                    {
+                        throw new Exception($"Insufficient stock for variant {variant.VariantValue}. Available: {variant.StockQty}, Requested: {itemRequest.Quantity}");
+                    }
+
+                    // Reduce stock quantity
+                    variant.StockQty -= itemRequest.Quantity;
+
+                    var gstRate = product.GstPercent;
                     var itemSubtotal = itemRequest.Price * itemRequest.Quantity;
                     var itemGst = (itemSubtotal * gstRate) / 100;
 
@@ -184,6 +198,17 @@ public class OrderService : IOrderService
         {
             try
             {
+                // Restore stock for all order items
+                foreach (var orderItem in order.OrderItems)
+                {
+                    var variant = await _context.ProductVariants.FindAsync(orderItem.VariantId)
+                        ?? throw new Exception($"Variant {orderItem.VariantId} not found");
+
+                    // Restore the stock quantity
+                    variant.StockQty += orderItem.Quantity;
+                    _context.ProductVariants.Update(variant);
+                }
+
                 var previousStatus = order.OrderStatus;
                 order.OrderStatus = "Cancelled";
                 order.CancelReason = reason;
@@ -205,14 +230,14 @@ public class OrderService : IOrderService
                 await _context.SaveChangesAsync();
                 await transaction.CommitAsync();
 
-                _logger.LogInformation($"Order cancelled. OrderId: {orderId}, Reason: {reason}");
+                _logger.LogInformation($"Order cancelled and stock restored. OrderId: {orderId}, Reason: {reason}");
                 return true;
             }
             catch (Exception ex)
             {
                 await transaction.RollbackAsync();
                 _logger.LogError($"Error cancelling order: {ex.Message}");
-                return false;
+                throw;
             }
         }
     }

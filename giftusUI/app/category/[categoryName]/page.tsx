@@ -36,7 +36,16 @@ export default function CategoryPage() {
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
   const [quantities, setQuantities] = useState<{ [key: number]: number }>({})
-  const { addToCart } = useCart()
+  const { addToCart, items: cartItems } = useCart()
+
+  // Initialize quantities from cart on component mount
+  useEffect(() => {
+    const initialQuantities: { [key: number]: number } = {}
+    cartItems.forEach((cartItem) => {
+      initialQuantities[cartItem.productId] = cartItem.quantity
+    })
+    setQuantities(initialQuantities)
+  }, [cartItems])
 
   useEffect(() => {
     const fetchProducts = async () => {
@@ -72,6 +81,15 @@ export default function CategoryPage() {
     }
   }, [categoryName])
 
+  // Separate products into in-stock and out-of-stock
+  const inStockProducts = products.filter(p => 
+    p.variants && p.variants.some(v => v.stockQty > 0)
+  )
+  const outOfStockProducts = products.filter(p => 
+    !p.variants || p.variants.every(v => v.stockQty <= 0)
+  )
+  const sortedProducts = [...inStockProducts, ...outOfStockProducts]
+
   if (loading) {
     return (
       <div className="min-h-screen bg-gradient-to-b from-background to-secondary/30 py-12">
@@ -104,7 +122,7 @@ export default function CategoryPage() {
             {decodeURIComponent(categoryName)}
           </h1>
           <p className="text-lg text-muted-foreground">
-            {products.length} {products.length === 1 ? 'product' : 'products'} available
+            {inStockProducts.length} in stock, {outOfStockProducts.length} out of stock
           </p>
         </div>
 
@@ -116,96 +134,80 @@ export default function CategoryPage() {
         )}
 
         {/* Products Grid */}
-        {products.length === 0 ? (
+        {sortedProducts.length === 0 ? (
           <div className="text-center py-16">
             <p className="text-muted-foreground text-lg">No products found in this category.</p>
           </div>
         ) : (
           <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-8">
-            {products.map((product) => (
+            {sortedProducts.map((product) => {
+              const hasStock = product.variants && product.variants.some(v => v.stockQty > 0)
+              const minPrice = product.variants && product.variants.length > 0 
+                ? Math.min(...product.variants.map(v => v.price)) 
+                : 0
+              const firstSize = product.variants && product.variants.length > 0 
+                ? product.variants[0].variantValue 
+                : 'N/A'
+              
+              return (
               <div
                 key={product.id}
-                className="group bg-card rounded-lg border border-border overflow-hidden hover:border-foreground/20 transition-all duration-300 hover:shadow-lg"
+                className={`group bg-card rounded-lg border border-border overflow-hidden transition-all duration-300 ${
+                  hasStock 
+                    ? 'hover:border-foreground/20 hover:shadow-lg' 
+                    : 'opacity-60'
+                }`}
               >
-                {/* Product Image */}
-                <div className="aspect-square relative overflow-hidden bg-muted">
-                  {product.baseImageUrl ? (
-                    <Image
-                      src={product.baseImageUrl}
-                      alt={product.modelNo}
-                      fill
-                      className="object-cover group-hover:scale-110 transition-transform duration-500"
-                    />
-                  ) : (
-                    <div className="w-full h-full flex items-center justify-center bg-secondary">
-                      <span className="text-muted-foreground">No image</span>
-                    </div>
-                  )}
-                </div>
+                {/* Out of Stock Badge */}
+                {!hasStock && (
+                  <div className="absolute top-3 right-3 z-10 bg-destructive text-white text-xs font-bold px-3 py-1 rounded">
+                    Out of Stock
+                  </div>
+                )}
+
+                {/* Product Image - Clickable */}
+                <Link href={`/product/${product.id}`}>
+                  <div className="aspect-square relative overflow-hidden bg-muted cursor-pointer">
+                    {product.baseImageUrl ? (
+                      <Image
+                        src={product.baseImageUrl}
+                        alt={product.modelNo}
+                        fill
+                        className="object-cover group-hover:scale-110 transition-transform duration-500"
+                      />
+                    ) : (
+                      <div className="w-full h-full flex items-center justify-center bg-secondary">
+                        <span className="text-muted-foreground">No image</span>
+                      </div>
+                    )}
+                  </div>
+                </Link>
 
                 {/* Product Details */}
-                <div className="p-6">
-                  {/* Model No */}
-                  <div className="flex justify-between items-start gap-3 mb-2">
-                    <div>
-                      <h3 className="text-lg font-semibold text-foreground group-hover:text-foreground/80 transition-colors">
-                        {product.modelNo}
-                      </h3>
-                    </div>
+                <div className="p-4">
+                  {/* Compact Info: Model No (Left) | Size (Right) */}
+                  <div className="flex justify-between items-baseline gap-2 mb-2">
+                    <h3 className="text-sm font-semibold text-foreground">
+                      {product.modelNo}
+                    </h3>
+                    <span className="text-xs text-muted-foreground">
+                      Size: {firstSize}
+                    </span>
+                  </div>
+                  
+                  {/* Price Line */}
+                  <div className="mb-4">
+                    <span className="text-sm font-bold text-primary">
+                      ₹{minPrice.toLocaleString('en-IN')}
+                    </span>
                   </div>
 
-                  {/* Description */}
-                  {product.shortDescription && (
-                    <p className="text-sm text-muted-foreground mb-4 line-clamp-2">
-                      {product.shortDescription}
-                    </p>
+                  {!hasStock && (
+                    <p className="text-xs text-destructive font-medium mb-3">No variants in stock</p>
                   )}
-
-                  {/* Variants */}
-                  {product.variants && product.variants.length > 0 && (
-                    <div className="mb-4">
-                      <p className="text-xs font-medium text-muted-foreground mb-2">Available Sizes:</p>
-                      <div className="flex flex-wrap gap-2">
-                        {product.variants.slice(0, 3).map((variant) => (
-                          <span
-                            key={variant.id}
-                            className="text-xs bg-secondary px-2 py-1 rounded text-muted-foreground"
-                          >
-                            {variant.variantValue}
-                          </span>
-                        ))}
-                        {product.variants.length > 3 && (
-                          <span className="text-xs bg-secondary px-2 py-1 rounded text-muted-foreground">
-                            +{product.variants.length - 3} more
-                          </span>
-                        )}
-                      </div>
-                    </div>
-                  )}
-
-                  {/* Price & GST */}
-                  <div className="mb-4 pb-4 border-t border-border">
-                    {product.variants && product.variants.length > 0 ? (
-                      <>
-                        <p className="text-sm text-muted-foreground mt-2">
-                          Starting from:{' '}
-                          <span className="text-lg font-semibold text-foreground">
-                            ₹{Math.min(...product.variants.map(v => v.price)).toLocaleString('en-IN')}
-                          </span>
-                        </p>
-                      </>
-                    ) : (
-                      <p className="text-sm text-muted-foreground mt-2">
-                        Price on request
-                      </p>
-                    )}
-                    <p className="text-xs text-muted-foreground mt-1">
-                      GST: {product.gstPercent}%
-                    </p>
-                  </div>
 
                   {/* Action Buttons */}
-                  <div className="flex gap-3">
+                  <div className="flex gap-2">
                     {quantities[product.id] ? (
                       <div className="flex-1 flex items-center border border-border rounded-lg bg-primary/5">
                         <button
@@ -213,10 +215,8 @@ export default function CategoryPage() {
                             const newQty = quantities[product.id] - 1
                             const variant = product.variants && product.variants[0]
                             if (newQty <= 0) {
-                              // Remove from cart when quantity reaches 0
                               setQuantities({ ...quantities, [product.id]: 0 })
                             } else {
-                              // Decrease quantity by 1
                               if (variant) {
                                 addToCart({
                                   id: `${product.id}-${variant.id}`,
@@ -232,19 +232,18 @@ export default function CategoryPage() {
                               setQuantities({ ...quantities, [product.id]: newQty })
                             }
                           }}
-                          className="px-3 py-2 hover:bg-secondary transition-colors rounded-l-lg"
+                          className="px-2 py-1 hover:bg-secondary transition-colors rounded-l-lg"
                         >
-                          <Minus className="h-4 w-4" />
+                          <Minus className="h-3 w-3" />
                         </button>
-                        <span className="flex-1 text-center font-semibold text-primary">
+                        <span className="flex-1 text-center font-semibold text-primary text-sm">
                           {quantities[product.id]}
                         </span>
                         <button
                           onClick={() => {
                             const newQty = quantities[product.id] + 1
                             const variant = product.variants && product.variants[0]
-                            if (variant) {
-                              // Increase quantity by 1
+                            if (variant && newQty <= variant.stockQty) {
                               addToCart({
                                 id: `${product.id}-${variant.id}`,
                                 productId: product.id,
@@ -255,19 +254,18 @@ export default function CategoryPage() {
                                 quantity: 1,
                                 baseImageUrl: product.baseImageUrl,
                               })
+                              setQuantities({ ...quantities, [product.id]: newQty })
                             }
-                            setQuantities({ ...quantities, [product.id]: newQty })
                           }}
-                          className="px-3 py-2 hover:bg-secondary transition-colors rounded-r-lg"
+                          className="px-2 py-1 hover:bg-secondary transition-colors rounded-r-lg"
                         >
-                          <Plus className="h-4 w-4" />
+                          <Plus className="h-3 w-3" />
                         </button>
                       </div>
                     ) : (
                       <button
                         onClick={() => {
                           setQuantities({ ...quantities, [product.id]: 1 })
-                          // Add first item to cart immediately
                           const variant = product.variants && product.variants[0]
                           if (variant) {
                             addToCart({
@@ -282,7 +280,8 @@ export default function CategoryPage() {
                             })
                           }
                         }}
-                        className="flex-1 flex items-center justify-center gap-2 bg-primary text-primary-foreground py-2 rounded-lg hover:bg-primary/90 transition-colors"
+                        disabled={!hasStock}
+                        className="flex-1 flex items-center justify-center gap-1 bg-primary text-primary-foreground py-2 rounded-lg hover:bg-primary/90 transition-colors text-sm font-medium disabled:opacity-50 disabled:cursor-not-allowed"
                       >
                         <ShoppingCart className="h-4 w-4" />
                         Add to Cart
@@ -291,14 +290,15 @@ export default function CategoryPage() {
 
                     <Link
                       href={`/product/${product.id}`}
-                      className="flex-1 flex items-center justify-center gap-2 bg-secondary text-foreground py-2 rounded-lg hover:bg-secondary/80 transition-colors"
+                      className="flex-1 flex items-center justify-center gap-1 bg-secondary text-foreground py-2 rounded-lg hover:bg-secondary/80 transition-colors text-sm font-medium"
                     >
                       View Details
                     </Link>
                   </div>
                 </div>
               </div>
-            ))}
+              )
+            })}
           </div>
         )}
         </div>

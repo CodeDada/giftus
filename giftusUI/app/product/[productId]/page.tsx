@@ -34,14 +34,13 @@ export default function ProductDetailPage() {
   const params = useParams()
   const router = useRouter()
   const productId = params.productId as string
-  const { addToCart } = useCart()
+  const { addToCart, items: allCartItems } = useCart()
   
   const [product, setProduct] = useState<Product | null>(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
   const [selectedVariant, setSelectedVariant] = useState<ProductVariant | null>(null)
   const [quantity, setQuantity] = useState(0)
-  const [cartItems, setCartItems] = useState<{ [key: string]: number }>({})
 
   useEffect(() => {
     const fetchProduct = async () => {
@@ -82,6 +81,15 @@ export default function ProductDetailPage() {
       fetchProduct()
     }
   }, [productId])
+
+  // Update quantity when selected variant changes or cart updates
+  useEffect(() => {
+    if (product && selectedVariant) {
+      const cartItemId = `${product.id}-${selectedVariant.id}`
+      const cartItem = allCartItems.find(item => item.id === cartItemId)
+      setQuantity(cartItem?.quantity ?? 0)
+    }
+  }, [product, selectedVariant, allCartItems])
 
   const handleAddToCart = () => {
     if (!selectedVariant || !product || quantity <= 0) return
@@ -151,15 +159,6 @@ export default function ProductDetailPage() {
       <main className="flex-1">
         <div className="bg-gradient-to-b from-background to-secondary/30 py-12">
           <div className="mx-auto max-w-7xl px-6 lg:px-8">
-            {/* Back Button */}
-            <Link 
-              href="/#products"
-              className="flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground mb-8 transition-colors"
-            >
-              <ArrowLeft className="h-4 w-4" />
-              Back to Products
-            </Link>
-
             {/* Product Detail Grid */}
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
               {/* Image Section */}
@@ -231,7 +230,7 @@ export default function ProductDetailPage() {
                 {/* Selected Variant Details */}
                 {selectedVariant && (
                   <div className="p-4 bg-secondary rounded-lg">
-                    <div className="grid grid-cols-2 gap-4">
+                    <div className="grid grid-cols-3 gap-4">
                       <div>
                         <p className="text-xs text-muted-foreground mb-1">Size</p>
                         <p className="text-lg font-semibold text-foreground">{selectedVariant.variantValue}</p>
@@ -239,6 +238,12 @@ export default function ProductDetailPage() {
                       <div>
                         <p className="text-xs text-muted-foreground mb-1">Price</p>
                         <p className="text-lg font-semibold text-foreground">₹{selectedVariant.price.toLocaleString('en-IN')}</p>
+                      </div>
+                      <div>
+                        <p className="text-xs text-muted-foreground mb-1">Stock</p>
+                        <p className={`text-lg font-semibold ${selectedVariant.stockQty > 0 ? 'text-green-600' : 'text-destructive'}`}>
+                          {selectedVariant.stockQty > 0 ? `${selectedVariant.stockQty} left` : 'Out of stock'}
+                        </p>
                       </div>
                     </div>
                   </div>
@@ -298,7 +303,8 @@ export default function ProductDetailPage() {
                           onClick={() => {
                             const newQty = quantity + 1
                             const variant = selectedVariant
-                            if (variant) {
+                            // Check stock limit before increasing
+                            if (variant && newQty <= variant.stockQty) {
                               addToCart({
                                 id: `${product.id}-${variant.id}`,
                                 productId: product.id,
@@ -309,10 +315,11 @@ export default function ProductDetailPage() {
                                 quantity: 1,
                                 baseImageUrl: product.baseImageUrl,
                               })
+                              handleQuantityChange(newQty)
                             }
-                            handleQuantityChange(newQty)
                           }}
-                          className="px-3 py-2 hover:bg-secondary transition-colors rounded-r-lg"
+                          disabled={!selectedVariant || quantity >= selectedVariant.stockQty}
+                          className="px-3 py-2 hover:bg-secondary transition-colors rounded-r-lg disabled:opacity-50 disabled:cursor-not-allowed"
                         >
                           <Plus className="h-4 w-4" />
                         </button>
