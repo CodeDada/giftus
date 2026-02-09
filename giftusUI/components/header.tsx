@@ -2,6 +2,7 @@
 
 import { useState } from "react"
 import Link from "next/link"
+import { useRouter } from "next/navigation"
 import { Menu, X, Phone, ShoppingCart } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { useCart } from "@/lib/cartContext"
@@ -17,7 +18,16 @@ const navigation = [
 export function Header() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
   const { getTotalItems } = useCart()
+  const router = useRouter()
   const totalItems = getTotalItems()
+
+  const handleNavClick = (href: string) => {
+    if (href.startsWith("#")) {
+      // For hash links, navigate to home page with the hash
+      router.push(`/${href}`)
+      setMobileMenuOpen(false)
+    }
+  }
 
   return (
     <header className="sticky top-0 z-50 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/80 border-b border-border">
@@ -32,13 +42,17 @@ export function Header() {
         {/* Desktop Navigation */}
         <div className="hidden lg:flex lg:gap-x-10">
           {navigation.map((item) => (
-            <Link
+            <button
               key={item.name}
-              href={item.href}
+              onClick={() => handleNavClick(item.href)}
               className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors"
             >
-              {item.name}
-            </Link>
+              {item.href.startsWith("#") ? item.name : (
+                <Link href={item.href} className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors">
+                  {item.name}
+                </Link>
+              )}
+            </button>
           ))}
         </div>
 
@@ -96,14 +110,17 @@ export function Header() {
         <div className="lg:hidden border-t border-border">
           <div className="space-y-1 px-6 py-4">
             {navigation.map((item) => (
-              <Link
+              <button
                 key={item.name}
-                href={item.href}
-                className="block py-2 text-base font-medium text-muted-foreground hover:text-foreground"
-                onClick={() => setMobileMenuOpen(false)}
+                onClick={() => handleNavClick(item.href)}
+                className="block w-full text-left py-2 text-base font-medium text-muted-foreground hover:text-foreground"
               >
-                {item.name}
-              </Link>
+                {item.href.startsWith("#") ? item.name : (
+                  <Link href={item.href} className="text-base font-medium text-muted-foreground hover:text-foreground">
+                    {item.name}
+                  </Link>
+                )}
+              </button>
             ))}
             <a
               href="tel:+919876543210"

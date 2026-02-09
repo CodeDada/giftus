@@ -3,24 +3,24 @@ import { Mail, Phone, MapPin } from "lucide-react"
 
 const navigation = {
   products: [
-    { name: "Trophies", href: "#" },
-    { name: "Awards", href: "#" },
-    { name: "Corporate Gifts", href: "#" },
-    { name: "Medals", href: "#" },
-    { name: "Plaques", href: "#" },
+    { name: "Trophies", href: "/?category=trophies" },
+    { name: "Awards", href: "/?category=awards" },
+    { name: "Corporate Gifts", href: "/?category=corporate-gifts" },
+    { name: "Medals", href: "/?category=medals" },
+    { name: "Plaques", href: "/?category=plaques" },
   ],
   company: [
-    { name: "About Us", href: "#" },
-    { name: "Our Process", href: "#" },
-    { name: "Bulk Orders", href: "#" },
-    { name: "Testimonials", href: "#" },
-    { name: "Contact", href: "#" },
+    { name: "About Us", href: "/#about" },
+    { name: "Our Process", href: "/#about" },
+    { name: "Bulk Orders", href: "/admin/bulk-upload" },
+    { name: "Testimonials", href: "/#why-us" },
+    { name: "Contact", href: "/#contact" },
   ],
   support: [
-    { name: "Help Center", href: "#" },
-    { name: "Shipping Info", href: "#" },
-    { name: "Returns", href: "#" },
-    { name: "FAQs", href: "#" },
+    { name: "Help Center", href: "/#contact" },
+    { name: "Shipping Info", href: "/#about" },
+    { name: "Returns", href: "/#about" },
+    { name: "FAQs", href: "/#about" },
   ],
 }
 
